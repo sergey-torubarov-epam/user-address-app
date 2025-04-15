@@ -12,33 +12,56 @@
 
         <h2 th:text="${address.addressId == null ? 'Create Address' : 'Edit Address'}"></h2>
 
-        <form th:action="${address.addressId == null ? '/addresses' : '/addresses/' + address.addressId}" th:object="${address}" method="post">
+        <form th:action="${address.addressId == null ? '/addresses' : '/addresses/' + address.addressId}" th:object="${address}" method="post" class="needs-validation" novalidate>
+            <div class="mb-3">
+                <label for="addressType" class="form-label">Address Type</label>
+                <select class="form-select" id="addressType" th:field="*{addressType}" required>
+                    <option value="">Select Address Type</option>
+                    <option value="HOME">Home</option>
+                    <option value="WORK">Work</option>
+                    <option value="OTHER">Other</option>
+                </select>
+                <div class="text-danger" th:if="${#fields.hasErrors('addressType')}" th:errors="*{addressType}"></div>
+            </div>
+
             <div class="mb-3">
                 <label for="buildingName" class="form-label">Building Name</label>
                 <input type="text" class="form-control" id="buildingName" th:field="*{buildingName}">
+                <div class="text-danger" th:if="${#fields.hasErrors('buildingName')}" th:errors="*{buildingName}"></div>
             </div>
             
             <div class="mb-3">
                 <label for="street" class="form-label">Street</label>
                 <input type="text" class="form-control" id="street" th:field="*{street}" required>
+                <div class="invalid-feedback">Please enter a valid street name</div>
                 <div class="text-danger" th:if="${#fields.hasErrors('street')}" th:errors="*{street}"></div>
             </div>
             
             <div class="mb-3">
                 <label for="city" class="form-label">City</label>
                 <input type="text" class="form-control" id="city" th:field="*{city}" required>
+                <div class="invalid-feedback">Please enter a valid city name</div>
                 <div class="text-danger" th:if="${#fields.hasErrors('city')}" th:errors="*{city}"></div>
             </div>
             
             <div class="mb-3">
                 <label for="state" class="form-label">State</label>
                 <input type="text" class="form-control" id="state" th:field="*{state}" required>
+                <div class="invalid-feedback">Please enter a valid state name</div>
                 <div class="text-danger" th:if="${#fields.hasErrors('state')}" th:errors="*{state}"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="country" class="form-label">Country</label>
+                <input type="text" class="form-control" id="country" th:field="*{country}" required>
+                <div class="invalid-feedback">Please enter a valid country name</div>
+                <div class="text-danger" th:if="${#fields.hasErrors('country')}" th:errors="*{country}"></div>
             </div>
             
             <div class="mb-3">
                 <label for="pincode" class="form-label">Pincode</label>
-                <input type="text" class="form-control" id="pincode" th:field="*{pincode}" required>
+                <input type="text" class="form-control" id="pincode" th:field="*{pincode}" required pattern="[0-9]{5,6}">
+                <div class="invalid-feedback">Please enter a valid pincode (5-6 digits)</div>
                 <div class="text-danger" th:if="${#fields.hasErrors('pincode')}" th:errors="*{pincode}"></div>
             </div>
             
@@ -48,5 +71,22 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Enable Bootstrap form validation
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+    </script>
 </body>
 </html>
