@@ -1,0 +1,13 @@
+com\uams\config\OpenApiConfig.class
+com\uams\controller\UserController.class
+com\uams\model\Address.class
+com\uams\service\AddressService.class
+com\uams\repository\UserRepository.class
+com\uams\model\User.class
+com\uams\controller\AddressController.class
+com\uams\service\AddressServiceImpl.class
+com\uams\repository\AddressRepository.class
+com\uams\controller\HomeController.class
+com\uams\UserAddressManagementSystemApplication.class
+com\uams\service\UserServiceImpl.class
+com\uams\service\UserService.class
