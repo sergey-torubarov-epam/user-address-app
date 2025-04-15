@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Controller
 @RequestMapping("/addresses")
@@ -23,6 +24,7 @@ import java.util.Optional;
 public class AddressController {
 
     private final AddressService addressService;
+    private static final Pattern PINCODE_PATTERN = Pattern.compile("^\\d{6}$");
 
     @Autowired
     public AddressController(AddressService addressService) {
@@ -43,6 +45,8 @@ public class AddressController {
     @GetMapping("/new")
     public String showCreateForm(Model model) {
         model.addAttribute("address", new Address());
+        model.addAttribute("addressTypes", getAddressTypes());
+        model.addAttribute("countries", getCountries());
         return "address/form";
     }
 
@@ -54,6 +58,8 @@ public class AddressController {
     public String createAddress(@Valid @ModelAttribute("address") Address address, 
                               BindingResult result, 
                               RedirectAttributes redirectAttributes) {
+        validatePincode(address.getPincode(), result);
+        
         if (result.hasErrors()) {
             return "address/form";
         }
@@ -68,6 +74,8 @@ public class AddressController {
         Optional<Address> addressOpt = addressService.getAddressById(id);
         if (addressOpt.isPresent()) {
             model.addAttribute("address", addressOpt.get());
+            model.addAttribute("addressTypes", getAddressTypes());
+            model.addAttribute("countries", getCountries());
             return "address/form";
         }
         return "redirect:/addresses";
@@ -82,6 +90,8 @@ public class AddressController {
                               @Valid @ModelAttribute("address") Address address, 
                               BindingResult result, 
                               RedirectAttributes redirectAttributes) {
+        validatePincode(address.getPincode(), result);
+                              
         if (result.hasErrors()) {
             return "address/form";
         }
@@ -101,5 +111,19 @@ public class AddressController {
         addressService.deleteAddress(id);
         redirectAttributes.addFlashAttribute("successMessage", "Address deleted successfully!");
         return "redirect:/addresses";
+    }
+
+    private List<String> getAddressTypes() {
+        return List.of("HOME", "WORK", "OTHER");
+    }
+
+    private List<String> getCountries() {
+        return List.of("India", "USA", "UK", "Canada", "Australia", "Germany", "France", "Japan", "China");
+    }
+
+    private void validatePincode(String pincode, BindingResult result) {
+        if (pincode != null && !PINCODE_PATTERN.matcher(pincode).matches()) {
+            result.rejectValue("pincode", "invalid.pincode", "Pincode must be 6 digits");
+        }
     }
 }
