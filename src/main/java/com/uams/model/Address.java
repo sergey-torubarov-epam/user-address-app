@@ -9,6 +9,7 @@ import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -45,6 +46,11 @@ public class Address {
     @NotBlank(message = "Pincode is required")
     @Column(name = "pincode", nullable = false)
     private String pincode;
+    
+    @NotBlank(message = "Address type is required")
+    @Pattern(regexp = "Home|Work|Other", message = "Address type must be 'Home', 'Work', or 'Other'")
+    @Column(name = "address_type", nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'Home'")
+    private String addressType = "Home";
 
     @ManyToMany(mappedBy = "addresses", fetch = FetchType.LAZY)
     private Set<User> users = new HashSet<>();
@@ -59,6 +65,7 @@ public class Address {
                 ", city='" + city + '\'' +
                 ", state='" + state + '\'' +
                 ", pincode='" + pincode + '\'' +
+                ", addressType='" + addressType + '\'' +
                 '}';
     }
 }
