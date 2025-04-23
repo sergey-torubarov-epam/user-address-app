@@ -13,6 +13,10 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List; // Although not directly used for the Set, keeping imports clean is good practice
+import javax.persistence.OneToMany;
+import javax.persistence.CascadeType;
+import javax.persistence.FetchType;
 
 @Entity
 @Table(name = "users")
@@ -20,8 +24,8 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = "addresses")
-@EqualsAndHashCode(exclude = "addresses")
+@ToString(exclude = {"addresses", "orders"}) // Exclude new collection
+@EqualsAndHashCode(exclude = {"addresses", "orders"}) // Exclude new collection
 public class User {
 
     @Id
@@ -58,7 +62,10 @@ public class User {
     )
     private Set<Address> addresses = new HashSet<>();
 
-    // Helper methods to manage bidirectional relationship
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<Order> orders = new HashSet<>();
+
+    // Helper methods to manage bidirectional relationship with Address
     public void addAddress(Address address) {
         this.addresses.add(address);
         address.getUsers().add(this);
@@ -68,4 +75,16 @@ public class User {
         this.addresses.remove(address);
         address.getUsers().remove(this);
     }
+
+    // Helper methods for Order relationship (optional but good practice)
+    public void addOrder(Order order) {
+        orders.add(order);
+        order.setUser(this);
+    }
+
+    public void removeOrder(Order order) {
+        orders.remove(order);
+        order.setUser(null);
+    }
 }
+```

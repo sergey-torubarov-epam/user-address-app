@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title th:text="${formTitle}">Order Form</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <h1 th:text="${formTitle}">Order Form</h1>
+
+     <!-- General Error Message Area -->
+    <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+     <!-- Validation Errors Summary -->
+    <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger" role="alert">
+        Please correct the errors below.
+    </div>
+
+
+    <form th:action="@{/orders/save}" th:object="${order}" method="post">
+        <!-- Hidden field for ID (for updates) -->
+        <input type="hidden" th:field="*{id}" />
+
+        <!-- User Selection -->
+        <div class="form-group mb-3">
+            <label for="user">User:</label>
+            <select id="user" name="userId" class="form-control" th:classappend="${#fields.hasErrors('user')} ? 'is-invalid'" required>
+                 <!-- Important: Use name="userId" to match controller @RequestParam -->
+                <option value="">Select User</option>
+                <option th:each="user : ${users}"
+                        th:value="${user.id}"
+                        th:text="${user.name}"
+                        th:selected="${order.user != null and order.user.id == user.id}"></option>
+            </select>
+             <div th:if="${#fields.hasErrors('user')}" class="invalid-feedback" th:errors="*{user}">User Error</div>
+             <!-- Specific error message for user not found -->
+             <div th:if="${#fields.hasErrors('global') and #strings.contains(#fields.errors('global')[0], 'User not found')}" class="invalid-feedback d-block">
+                 Selected user not found.
+             </div>
+        </div>
+
+        <!-- Order Date -->
+        <div class="form-group mb-3">
+            <label for="orderDate">Order Date:</label>
+            <input type="date" id="orderDate" th:field="*{orderDate}" class="form-control" th:classappend="${#fields.hasErrors('orderDate')} ? 'is-invalid'" required />
+            <div th:if="${#fields.hasErrors('orderDate')}" class="invalid-feedback" th:errors="*{orderDate}">Order Date Error</div>
+        </div>
+
+        <!-- Status -->
+        <div class="form-group mb-3">
+            <label for="status">Status:</label>
+            <!-- Consider using a dropdown for predefined statuses -->
+            <input type="text" id="status" th:field="*{status}" class="form-control" th:classappend="${#fields.hasErrors('status')} ? 'is-invalid'" required />
+             <div th:if="${#fields.hasErrors('status')}" class="invalid-feedback" th:errors="*{status}">Status Error</div>
+        </div>
+
+        <!-- Shipping Date (Optional) -->
+        <div class="form-group mb-3">
+            <label for="shippingDate">Shipping Date:</label>
+            <input type="date" id="shippingDate" th:field="*{shippingDate}" class="form-control" th:classappend="${#fields.hasErrors('shippingDate')} ? 'is-invalid'" />
+             <div th:if="${#fields.hasErrors('shippingDate')}" class="invalid-feedback" th:errors="*{shippingDate}">Shipping Date Error</div>
+        </div>
+
+        <!-- Price -->
+        <div class="form-group mb-3">
+            <label for="price">Price (per item):</label>
+            <input type="number" step="0.01" id="price" th:field="*{price}" class="form-control" th:classappend="${#fields.hasErrors('price')} ? 'is-invalid'" required />
+             <div th:if="${#fields.hasErrors('price')}" class="invalid-feedback" th:errors="*{price}">Price Error</div>
+        </div>
+
+        <!-- Quantity -->
+        <div class="form-group mb-3">
+            <label for="quantity">Quantity:</label>
+            <input type="number" step="1" id="quantity" th:field="*{quantity}" class="form-control" th:classappend="${#fields.hasErrors('quantity')} ? 'is-invalid'" required />
+             <div th:if="${#fields.hasErrors('quantity')}" class="invalid-feedback" th:errors="*{quantity}">Quantity Error</div>
+        </div>
+
+        <!-- Product Description -->
+        <div class="form-group mb-3">
+            <label for="productDescription">Product Description:</label>
+            <textarea id="productDescription" th:field="*{productDescription}" class="form-control" rows="3" th:classappend="${#fields.hasErrors('productDescription')} ? 'is-invalid'" required></textarea>
+             <div th:if="${#fields.hasErrors('productDescription')}" class="invalid-feedback" th:errors="*{productDescription}">Product Description Error</div>
+        </div>
+
+
+        <button type="submit" class="btn btn-success">Save Order</button>
+        <a th:href="@{/orders}" class="btn btn-secondary">Cancel</a>
+    </form>
+</section>
+</body>
+</html>
