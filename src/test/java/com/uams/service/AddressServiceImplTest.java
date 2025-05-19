@@ -38,6 +38,7 @@ public class AddressServiceImplTest {
         address1.setCity("New York");
         address1.setState("NY");
         address1.setPincode("10001");
+        address1.setCountry("USA");
 
         address2 = new Address();
         address2.setAddressId(2L);
@@ -46,6 +47,7 @@ public class AddressServiceImplTest {
         address2.setCity("Los Angeles");
         address2.setState("CA");
         address2.setPincode("90001");
+        address2.setCountry("USA");
     }
 
     @Test
@@ -59,7 +61,9 @@ public class AddressServiceImplTest {
         // Assert
         assertEquals(2, addresses.size());
         assertEquals(address1.getStreet(), addresses.get(0).getStreet());
+        assertEquals(address1.getCountry(), addresses.get(0).getCountry());
         assertEquals(address2.getStreet(), addresses.get(1).getStreet());
+        assertEquals(address2.getCountry(), addresses.get(1).getCountry());
         verify(addressRepository, times(1)).findAll();
     }
 
@@ -74,6 +78,7 @@ public class AddressServiceImplTest {
         // Assert
         assertTrue(result.isPresent());
         assertEquals(address1.getStreet(), result.get().getStreet());
+        assertEquals(address1.getCountry(), result.get().getCountry());
         verify(addressRepository, times(1)).findById(1L);
     }
 
@@ -101,6 +106,7 @@ public class AddressServiceImplTest {
         // Assert
         assertNotNull(savedAddress);
         assertEquals(address1.getStreet(), savedAddress.getStreet());
+        assertEquals(address1.getCountry(), savedAddress.getCountry());
         verify(addressRepository, times(1)).save(address1);
     }
 
