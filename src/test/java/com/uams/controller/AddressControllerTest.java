@@ -59,15 +59,14 @@ public class AddressControllerTest {
         address.setCity("New York");
         address.setState("NY");
         address.setPincode("10001");
+        address.setCountry("USA");
         address.setUsers(new HashSet<>());
     }
 
     @Test
     void listAddresses_ShouldAddAddressesToModelAndReturnListView() throws Exception {
-        // Arrange
         when(addressService.getAllAddresses()).thenReturn(Arrays.asList(address));
 
-        // Act & Assert
         mockMvc.perform(get("/addresses"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("addresses"))
@@ -78,7 +77,6 @@ public class AddressControllerTest {
 
     @Test
     void showCreateForm_ShouldAddNewAddressToModelAndReturnFormView() throws Exception {
-        // Act & Assert
         mockMvc.perform(get("/addresses/new"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("address"))
@@ -87,14 +85,11 @@ public class AddressControllerTest {
 
     @Test
     void createAddress_WithValidData_ShouldSaveAddressAndRedirect() {
-        // Arrange
         when(bindingResult.hasErrors()).thenReturn(false);
         when(addressService.saveAddress(any(Address.class))).thenReturn(address);
 
-        // Act
         String viewName = addressController.createAddress(address, bindingResult, redirectAttributes);
 
-        // Assert
         assertEquals("redirect:/addresses", viewName);
         verify(addressService, times(1)).saveAddress(address);
         verify(redirectAttributes, times(1)).addFlashAttribute(eq("successMessage"), anyString());
@@ -102,23 +97,29 @@ public class AddressControllerTest {
 
     @Test
     void createAddress_WithInvalidData_ShouldReturnFormWithErrors() {
-        // Arrange
         when(bindingResult.hasErrors()).thenReturn(true);
 
-        // Act
         String viewName = addressController.createAddress(address, bindingResult, redirectAttributes);
 
-        // Assert
+        assertEquals("address/form", viewName);
+        verify(addressService, never()).saveAddress(any(Address.class));
+    }
+
+    @Test
+    void createAddress_WithEmptyCountry_ShouldReturnFormWithErrors() {
+        address.setCountry("");
+        when(bindingResult.hasErrors()).thenReturn(true);
+
+        String viewName = addressController.createAddress(address, bindingResult, redirectAttributes);
+
         assertEquals("address/form", viewName);
         verify(addressService, never()).saveAddress(any(Address.class));
     }
 
     @Test
     void showEditForm_WithExistingId_ShouldAddAddressToModelAndReturnFormView() throws Exception {
-        // Arrange
         when(addressService.getAddressById(1L)).thenReturn(Optional.of(address));
 
-        // Act & Assert
         mockMvc.perform(get("/addresses/1/edit"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("address"))
@@ -129,10 +130,8 @@ public class AddressControllerTest {
 
     @Test
     void showEditForm_WithNonExistingId_ShouldRedirectToAddressesList() throws Exception {
-        // Arrange
         when(addressService.getAddressById(99L)).thenReturn(Optional.empty());
 
-        // Act & Assert
         mockMvc.perform(get("/addresses/99/edit"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/addresses"));
@@ -142,14 +141,11 @@ public class AddressControllerTest {
 
     @Test
     void updateAddress_WithValidData_ShouldUpdateAddressAndRedirect() {
-        // Arrange
         when(bindingResult.hasErrors()).thenReturn(false);
         when(addressService.saveAddress(any(Address.class))).thenReturn(address);
 
-        // Act
         String viewName = addressController.updateAddress(1L, address, bindingResult, redirectAttributes);
 
-        // Assert
         assertEquals("redirect:/addresses", viewName);
         assertEquals(1L, address.getAddressId());
         verify(addressService, times(1)).saveAddress(address);
@@ -158,23 +154,29 @@ public class AddressControllerTest {
 
     @Test
     void updateAddress_WithInvalidData_ShouldReturnFormWithErrors() {
-        // Arrange
         when(bindingResult.hasErrors()).thenReturn(true);
 
-        // Act
         String viewName = addressController.updateAddress(1L, address, bindingResult, redirectAttributes);
 
-        // Assert
+        assertEquals("address/form", viewName);
+        verify(addressService, never()).saveAddress(any(Address.class));
+    }
+
+    @Test
+    void updateAddress_WithInvalidCountry_ShouldReturnFormWithErrors() {
+        address.setCountry("");
+        when(bindingResult.hasErrors()).thenReturn(true);
+
+        String viewName = addressController.updateAddress(1L, address, bindingResult, redirectAttributes);
+
         assertEquals("address/form", viewName);
         verify(addressService, never()).saveAddress(any(Address.class));
     }
 
     @Test
     void deleteAddress_ShouldDeleteAddressAndRedirect() throws Exception {
-        // Arrange
         doNothing().when(addressService).deleteAddress(1L);
 
-        // Act & Assert
         mockMvc.perform(get("/addresses/1/delete"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/addresses"));
