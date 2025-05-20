@@ -1,23 +1,24 @@
-package com.uams.config;
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsDoc = require('swagger-jsdoc');
 
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.Contact;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+const swaggerOptions = {
+  swaggerDefinition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'User Address Management System API',
+      description: 'API documentation for managing users and their addresses',
+      version: '1.0',
+      contact: {
+        name: 'UAMS Team',
+        email: 'support@uams.com',
+      },
+    },
+  },
+  apis: ['./routes/*.js'], // Update this to the correct path where your route files are located
+};
 
-@Configuration
-public class OpenApiConfig {
-    
-    @Bean
-    public OpenAPI userAddressOpenAPI() {
-        return new OpenAPI()
-                .info(new Info()
-                        .title("User Address Management System API")
-                        .description("API documentation for managing users and their addresses")
-                        .version("1.0")
-                        .contact(new Contact()
-                                .name("UAMS Team")
-                                .email("support@uams.com")));
-    }
-} 
+const swaggerSpec = swaggerJsDoc(swaggerOptions);
+
+module.exports = (app) => {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+};
