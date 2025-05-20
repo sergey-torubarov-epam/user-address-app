@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,16 +8,18 @@
 </head>
 <body>
     <div class="container">
-        <div th:replace="layout/main :: nav"></div>
+        <%- include('layout/main') %>
 
-        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-            <span th:text="${successMessage}"></span>
+        <% if (successMessage) { %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <span><%= successMessage %></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+        <% } %>
 
         <h2>Users</h2>
         <div class="mb-3">
-            <a th:href="@{/users/new}" class="btn btn-primary">Add New User</a>
+            <a href="/users/new" class="btn btn-primary">Add New User</a>
         </div>
 
         <div class="table-responsive">
@@ -33,22 +35,27 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:if="${users.empty}">
+                    <% if (!users || users.length === 0) { %>
+                    <tr>
                         <td colspan="6" class="text-center">No users found</td>
                     </tr>
-                    <tr th:each="user : ${users}">
-                        <td th:text="${user.userId}"></td>
-                        <td th:text="${user.email}"></td>
-                        <td th:text="${user.firstName}"></td>
-                        <td th:text="${user.lastName}"></td>
-                        <td th:text="${user.mobileNumber}"></td>
+                    <% } else { %>
+                    <% users.forEach(user => { %>
+                    <tr>
+                        <td><%= user.userId %></td>
+                        <td><%= user.email %></td>
+                        <td><%= user.firstName %></td>
+                        <td><%= user.lastName %></td>
+                        <td><%= user.mobileNumber %></td>
                         <td>
-                            <a th:href="@{/users/{id}/edit(id=${user.userId})}" class="btn btn-sm btn-warning">Edit</a>
-                            <a th:href="@{/users/{id}/addresses(id=${user.userId})}" class="btn btn-sm btn-info">Addresses</a>
-                            <a th:href="@{/users/{id}/delete(id=${user.userId})}" class="btn btn-sm btn-danger" 
+                            <a href="/users/<%= user.userId %>/edit" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="/users/<%= user.userId %>/addresses" class="btn btn-sm btn-info">Addresses</a>
+                            <a href="/users/<%= user.userId %>/delete" class="btn btn-sm btn-danger" 
                                onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
                         </td>
                     </tr>
+                    <% }); %>
+                    <% } %>
                 </tbody>
             </table>
         </div>
