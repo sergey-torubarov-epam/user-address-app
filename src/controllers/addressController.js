@@ -15,8 +15,7 @@ exports.showCreateForm = (req, res) => {
 
 exports.createAddress = async (req, res) => {
     try {
-        const { buildingName, street, city, state, pincode } = req.body;
-        const address = await Address.create({ buildingName, street, city, state, pincode });
+        const address = await Address.create(req.body);
         req.flash('successMessage', 'Address created successfully!');
         res.redirect('/addresses');
     } catch (error) {
@@ -39,10 +38,14 @@ exports.showEditForm = async (req, res) => {
 
 exports.updateAddress = async (req, res) => {
     try {
-        const { buildingName, street, city, state, pincode } = req.body;
-        await Address.update({ buildingName, street, city, state, pincode }, { where: { addressId: req.params.id } });
-        req.flash('successMessage', 'Address updated successfully!');
-        res.redirect('/addresses');
+        const address = await Address.findByPk(req.params.id);
+        if (address) {
+            await address.update(req.body);
+            req.flash('successMessage', 'Address updated successfully!');
+            res.redirect('/addresses');
+        } else {
+            res.redirect('/addresses');
+        }
     } catch (error) {
         res.status(500).send(error.message);
     }
@@ -50,9 +53,14 @@ exports.updateAddress = async (req, res) => {
 
 exports.deleteAddress = async (req, res) => {
     try {
-        await Address.destroy({ where: { addressId: req.params.id } });
-        req.flash('successMessage', 'Address deleted successfully!');
-        res.redirect('/addresses');
+        const address = await Address.findByPk(req.params.id);
+        if (address) {
+            await address.destroy();
+            req.flash('successMessage', 'Address deleted successfully!');
+            res.redirect('/addresses');
+        } else {
+            res.redirect('/addresses');
+        }
     } catch (error) {
         res.status(500).send(error.message);
     }
