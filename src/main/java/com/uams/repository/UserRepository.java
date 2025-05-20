@@ -1,13 +1,25 @@
-package com.uams.repository;
+// repositories/userRepository.js
 
-import com.uams.model.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+const { User } = require('../models'); // Adjust the path if necessary
 
-import java.util.Optional;
+const findByEmail = async (email) => {
+  try {
+    return await User.findOne({ where: { email } }); // Sequelize query
+  } catch (error) {
+    throw new Error(`Error finding user by email: ${error.message}`);
+  }
+};
 
-@Repository
-public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByEmail(String email);
-    boolean existsByEmail(String email);
-}
+const existsByEmail = async (email) => {
+  try {
+    const user = await User.findOne({ where: { email } }); // Sequelize query
+    return !!user;
+  } catch (error) {
+    throw new Error(`Error checking if email exists: ${error.message}`);
+  }
+};
+
+module.exports = {
+  findByEmail,
+  existsByEmail,
+};
