@@ -1,105 +1,175 @@
-package com.uams.controller;
+// routes/addressRoutes.js
 
-import com.uams.model.Address;
-import com.uams.service.AddressService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
+const express = require('express');
+const router = express.Router();
+const addressService = require('../services/addressService');
 
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Optional;
-
-@Controller
-@RequestMapping("/addresses")
-@Tag(name = "Address Management", description = "APIs for managing addresses")
-public class AddressController {
-
-    private final AddressService addressService;
-
-    @Autowired
-    public AddressController(AddressService addressService) {
-        this.addressService = addressService;
+// List all addresses
+router.get('/', async (req, res) => {
+    try {
+        const addresses = await addressService.getAllAddresses();
+        res.render('address/list', { addresses });
+    } catch (error) {
+        res.status(500).send('Error fetching addresses');
     }
+});
 
-    @Operation(
-        summary = "List all addresses",
-        description = "Returns a page displaying all addresses in the system"
-    )
-    @GetMapping
-    public String listAddresses(Model model) {
-        List<Address> addresses = addressService.getAllAddresses();
-        model.addAttribute("addresses", addresses);
-        return "address/list";
-    }
+// Show form for creating a new address
+router.get('/new', (req, res) => {
+    res.render('address/form', { address: {} });
+});
 
-    @GetMapping("/new")
-    public String showCreateForm(Model model) {
-        model.addAttribute("address", new Address());
-        return "address/form";
-    }
-
-    @Operation(
-        summary = "Create new address",
-        description = "Creates a new address with the provided details"
-    )
-    @PostMapping
-    public String createAddress(@Valid @ModelAttribute("address") Address address, 
-                              BindingResult result, 
-                              RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            return "address/form";
+// Create a new address
+router.post('/', async (req, res) => {
+    try {
+        const address = req.body;
+        const validationErrors = addressService.validateAddress(address);
+        if (validationErrors.length > 0) {
+            return res.status(400).render('address/form', { address, errors: validationErrors });
         }
-        
-        addressService.saveAddress(address);
-        redirectAttributes.addFlashAttribute("successMessage", "Address created successfully!");
-        return "redirect:/addresses";
+        await addressService.createAddress(address);
+        req.flash('successMessage', 'Address created successfully!');
+        res.redirect('/addresses');
+    } catch (error) {
+        res.status(500).send('Error creating address');
     }
+});
 
-    @GetMapping("/{id}/edit")
-    public String showEditForm(@PathVariable Long id, Model model) {
-        Optional<Address> addressOpt = addressService.getAddressById(id);
-        if (addressOpt.isPresent()) {
-            model.addAttribute("address", addressOpt.get());
-            return "address/form";
+// Show form for editing an address
+router.get('/:id/edit', async (req, res) => {
+    try {
+        const address = await addressService.getAddressById(req.params.id);
+        if (address) {
+            res.render('address/form', { address });
+        } else {
+            res.redirect('/addresses');
         }
-        return "redirect:/addresses";
+    } catch (error) {
+        res.status(500).send('Error fetching the address');
     }
+});
 
-    @Operation(
-        summary = "Update address",
-        description = "Updates an existing address's information"
-    )
-    @PostMapping("/{id}")
-    public String updateAddress(@Parameter(description = "ID of the address to update") @PathVariable Long id, 
-                              @Valid @ModelAttribute("address") Address address, 
-                              BindingResult result, 
-                              RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            return "address/form";
+// Update an existing address
+router.post('/:id', async (req, res) => {
+    try {
+        const address = req.body;
+        address.id = req.params.id;
+        const validationErrors = addressService.validateAddress(address);
+        if (validationErrors.length > 0) {
+            return res.status(400).render('address/form', { address, errors: validationErrors });
         }
-        
-        address.setAddressId(id);
-        addressService.saveAddress(address);
-        redirectAttributes.addFlashAttribute("successMessage", "Address updated successfully!");
-        return "redirect:/addresses";
+        await addressService.updateAddress(req.params.id, address);
+        req.flash('successMessage', 'Address updated successfully!');
+        res.redirect('/addresses');
+    } catch (error) {
+        res.status(500).send('Error updating address');
     }
+});
 
-    @Operation(
-        summary = "Delete address",
-        description = "Deletes an address from the system"
-    )
-    @GetMapping("/{id}/delete")
-    public String deleteAddress(@Parameter(description = "ID of the address to delete") @PathVariable Long id, RedirectAttributes redirectAttributes) {
-        addressService.deleteAddress(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Address deleted successfully!");
-        return "redirect:/addresses";
+// Delete an address
+router.get('/:id/delete', async (req, res) => {
+    try {
+        await addressService.deleteAddress(req.params.id);
+        req.flash('successMessage', 'Address deleted successfully!');
+        res.redirect('/addresses');
+    } catch (error) {
+        res.status(500).send('Error deleting address');
+    }
+});
+
+module.exports = router;
+```
+
+```javascript
+// services/addressService.js
+
+const Address = require('../models/Address'); // Assuming you have an Address model
+
+// Fetch all addresses
+async function getAllAddresses() {
+    try {
+        return await Address.find();
+    } catch (error) {
+        throw new Error('Error fetching addresses');
     }
 }
+
+// Fetch an address by ID
+async function getAddressById(id) {
+    try {
+        return await Address.findById(id);
+    } catch (error) {
+        throw new Error('Error fetching address');
+    }
+}
+
+// Validate address input
+function validateAddress(address) {
+    const errors = [];
+    if (!address.street || address.street.trim() === '') {
+        errors.push('Street is required');
+    }
+    if (!address.city || address.city.trim() === '') {
+        errors.push('City is required');
+    }
+    if (!address.state || address.state.trim() === '') {
+        errors.push('State is required');
+    }
+    if (!address.zip || address.zip.trim() === '') {
+        errors.push('ZIP code is required');
+    }
+    return errors;
+}
+
+// Create a new address
+async function createAddress(address) {
+    try {
+        const newAddress = new Address(address);
+        await newAddress.save();
+    } catch (error) {
+        throw new Error('Error creating address');
+    }
+}
+
+// Update an existing address
+async function updateAddress(id, address) {
+    try {
+        await Address.findByIdAndUpdate(id, address);
+    } catch (error) {
+        throw new Error('Error updating address');
+    }
+}
+
+// Delete an address
+async function deleteAddress(id) {
+    try {
+        await Address.findByIdAndDelete(id);
+    } catch (error) {
+        throw new Error('Error deleting address');
+    }
+}
+
+module.exports = {
+    getAllAddresses,
+    getAddressById,
+    validateAddress,
+    createAddress,
+    updateAddress,
+    deleteAddress,
+};
+```
+
+```javascript
+// models/Address.js
+
+const mongoose = require('mongoose');
+
+const addressSchema = new mongoose.Schema({
+    street: { type: String, required: true },
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    zip: { type: String, required: true },
+});
+
+module.exports = mongoose.model('Address', addressSchema);
+```
