@@ -1,40 +1,50 @@
-package com.uams.service;
+const AddressRepository = require('../repository/addressRepository');
 
-import com.uams.model.Address;
-import com.uams.repository.AddressRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
-
-@Service
-public class AddressServiceImpl implements AddressService {
-
-    private final AddressRepository addressRepository;
-
-    @Autowired
-    public AddressServiceImpl(AddressRepository addressRepository) {
+class AddressService {
+    constructor(addressRepository) {
         this.addressRepository = addressRepository;
     }
 
-    @Override
-    public List<Address> getAllAddresses() {
-        return addressRepository.findAll();
+    async getAllAddresses() {
+        try {
+            return await this.addressRepository.findAll();
+        } catch (error) {
+            throw new Error(`Error fetching all addresses: ${error.message}`);
+        }
     }
 
-    @Override
-    public Optional<Address> getAddressById(Long id) {
-        return addressRepository.findById(id);
+    async getAddressById(id) {
+        try {
+            const address = await this.addressRepository.findById(id);
+            if (!address) {
+                throw new Error(`Address with ID ${id} not found`);
+            }
+            return address;
+        } catch (error) {
+            throw new Error(`Error fetching address with ID ${id}: ${error.message}`);
+        }
     }
 
-    @Override
-    public Address saveAddress(Address address) {
-        return addressRepository.save(address);
+    async saveAddress(address) {
+        try {
+            return await this.addressRepository.save(address);
+        } catch (error) {
+            throw new Error(`Error saving address: ${error.message}`);
+        }
     }
 
-    @Override
-    public void deleteAddress(Long id) {
-        addressRepository.deleteById(id);
+    async deleteAddress(id) {
+        try {
+            const addressExists = await this.addressRepository.findById(id);
+            if (!addressExists) {
+                throw new Error(`Address with ID ${id} not found`);
+            }
+            await this.addressRepository.deleteById(id);
+        } catch (error) {
+            throw new Error(`Error deleting address with ID ${id}: ${error.message}`);
+        }
     }
 }
+
+module.exports = new AddressService(new AddressRepository());
+```
