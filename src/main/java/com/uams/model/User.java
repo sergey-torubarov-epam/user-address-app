@@ -1,71 +1,77 @@
-package com.uams.model;
+const { DataTypes, Model } = require('sequelize');
+const sequelize = require('../config/database');
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.ToString;
-import lombok.EqualsAndHashCode;
+class User extends Model {}
 
-import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
-import java.util.HashSet;
-import java.util.Set;
+User.init(
+  {
+    userId: {
+      type: DataTypes.BIGINT,
+      autoIncrement: true,
+      primaryKey: true,
+      field: 'user_id',
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      validate: {
+        notNull: { msg: 'Email is required' },
+        isEmail: { msg: 'Please provide a valid email address' },
+      },
+    },
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      field: 'first_name',
+      validate: {
+        notNull: { msg: 'First name is required' },
+      },
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      field: 'last_name',
+      validate: {
+        notNull: { msg: 'Last name is required' },
+      },
+    },
+    mobileNumber: {
+      type: DataTypes.STRING,
+      field: 'mobile_number',
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: { msg: 'Password is required' },
+        len: {
+          args: [6],
+          msg: 'Password must be at least 6 characters long',
+        },
+      },
+    },
+  },
+  {
+    sequelize,
+    modelName: 'User',
+    tableName: 'users',
+    timestamps: false,
+  }
+);
 
-@Entity
-@Table(name = "users")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString(exclude = "addresses")
-@EqualsAndHashCode(exclude = "addresses")
-public class User {
+const Address = require('./address'); // Assuming Address model is defined similarly
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Long userId;
+// Define the many-to-many relationship
+User.belongsToMany(Address, {
+  through: 'user_address',
+  foreignKey: 'user_id',
+  otherKey: 'address_id',
+});
+Address.belongsToMany(User, {
+  through: 'user_address',
+  foreignKey: 'address_id',
+  otherKey: 'user_id',
+});
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Please provide a valid email address")
-    @Column(name = "email", nullable = false, unique = true)
-    private String email;
-
-    @NotBlank(message = "First name is required")
-    @Column(name = "first_name", nullable = false)
-    private String firstName;
-
-    @NotBlank(message = "Last name is required")
-    @Column(name = "last_name", nullable = false)
-    private String lastName;
-
-    @Column(name = "mobile_number")
-    private String mobileNumber;
-
-    @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters long")
-    @Column(name = "password", nullable = false)
-    private String password;
-
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "user_address",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "address_id")
-    )
-    private Set<Address> addresses = new HashSet<>();
-
-    // Helper methods to manage bidirectional relationship
-    public void addAddress(Address address) {
-        this.addresses.add(address);
-        address.getUsers().add(this);
-    }
-
-    public void removeAddress(Address address) {
-        this.addresses.remove(address);
-        address.getUsers().remove(this);
-    }
-}
+module.exports = User;
