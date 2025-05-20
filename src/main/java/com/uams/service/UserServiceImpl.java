@@ -1,50 +1,61 @@
-package com.uams.service;
+# New code content starts from this line #
+const UserRepository = require('../repository/UserRepository');
 
-import com.uams.model.User;
-import com.uams.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
-
-@Service
-public class UserServiceImpl implements UserService {
-
-    private final UserRepository userRepository;
-
-    @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
+class UserService {
+    constructor() {
+        this.userRepository = new UserRepository();
     }
 
-    @Override
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    async getAllUsers() {
+        try {
+            return await this.userRepository.findAll();
+        } catch (error) {
+            throw new Error(`Error fetching all users: ${error.message}`);
+        }
     }
 
-    @Override
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
+    async getUserById(id) {
+        try {
+            const user = await this.userRepository.findById(id);
+            return user ? user : null;
+        } catch (error) {
+            throw new Error(`Error fetching user by ID: ${error.message}`);
+        }
     }
 
-    @Override
-    public User saveUser(User user) {
-        return userRepository.save(user);
+    async saveUser(user) {
+        try {
+            return await this.userRepository.save(user);
+        } catch (error) {
+            throw new Error(`Error saving user: ${error.message}`);
+        }
     }
 
-    @Override
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+    async deleteUser(id) {
+        try {
+            await this.userRepository.deleteById(id);
+        } catch (error) {
+            throw new Error(`Error deleting user: ${error.message}`);
+        }
     }
 
-    @Override
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
+    async existsByEmail(email) {
+        try {
+            return await this.userRepository.existsByEmail(email);
+        } catch (error) {
+            throw new Error(`Error checking if email exists: ${error.message}`);
+        }
     }
 
-    @Override
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+    async findByEmail(email) {
+        try {
+            const user = await this.userRepository.findByEmail(email);
+            return user ? user : null;
+        } catch (error) {
+            throw new Error(`Error fetching user by email: ${error.message}`);
+        }
     }
 }
+
+module.exports = UserService;
+# New code content ends this line #
