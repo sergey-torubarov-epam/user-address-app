@@ -23,6 +23,8 @@ router.post('/', async (req, res, next) => {
   const userData = req.body;
   try {
     const existingUser = await userService.getUserByEmail(userData.email);
+    
+    // Check if user with the given email already exists
     if (existingUser) {
       return res.render('user/form', {
         user: userData,
@@ -30,6 +32,7 @@ router.post('/', async (req, res, next) => {
       });
     }
 
+    // Create a new user if email doesn't exist
     await userService.createUser(userData);
     req.flash('successMessage', 'User created successfully!');
     res.redirect('/users');
@@ -43,6 +46,8 @@ router.get('/:id/edit', async (req, res, next) => {
   const userId = req.params.id;
   try {
     const user = await userService.getUserById(userId);
+    
+    // Render edit form if user is found, otherwise redirect to user list
     if (user) {
       res.render('user/form', { user });
     } else {
@@ -60,10 +65,13 @@ router.post('/:id', async (req, res, next) => {
 
   try {
     const existingUser = await userService.getUserById(userId);
+    
+    // Redirect if user does not exist
     if (!existingUser) {
       return res.redirect('/users');
     }
 
+    // Check if new email already exists and is not the current user's email
     if (
       existingUser.email !== userData.email &&
       (await userService.getUserByEmail(userData.email))
@@ -74,6 +82,7 @@ router.post('/:id', async (req, res, next) => {
       });
     }
 
+    // Update user data
     await userService.updateUser(userId, userData);
     req.flash('successMessage', 'User updated successfully!');
     res.redirect('/users');
@@ -101,6 +110,8 @@ router.get('/:id/addresses', async (req, res, next) => {
 
   try {
     const user = await userService.getUserById(userId);
+    
+    // Retrieve and render user addresses if user is found
     if (user) {
       const allAddresses = await addressService.getAllAddresses();
       res.render('user/addresses', {
@@ -126,6 +137,7 @@ router.post('/:userId/addresses/add', async (req, res, next) => {
     const user = await userService.getUserById(userId);
     const address = await addressService.getAddressById(addressId);
 
+    // Add address to user if both user and address are found
     if (user && address) {
       await userService.addAddressToUser(userId, addressId);
       req.flash('successMessage', 'Address added to user successfully!');
@@ -146,6 +158,7 @@ router.get('/:userId/addresses/:addressId/remove', async (req, res, next) => {
     const user = await userService.getUserById(userId);
     const address = await addressService.getAddressById(addressId);
 
+    // Remove address from user if both user and address are found
     if (user && address) {
       await userService.removeAddressFromUser(userId, addressId);
       req.flash('successMessage', 'Address removed from user successfully!');
