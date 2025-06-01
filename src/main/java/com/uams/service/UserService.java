@@ -3,6 +3,10 @@
 const users = new Map(); // Using a Map to simulate a database
 let userIdCounter = 1;
 
+/**
+ * @class UserService
+ * @classdesc Service class for managing users.
+ */
 class UserService {
     /**
      * Retrieves all users.
@@ -26,6 +30,7 @@ class UserService {
      * Otherwise, creates a new user.
      * @param {Object} user - User data.
      * @returns {Object} The saved user.
+     * @throws Will throw an error if the user with the specified ID does not exist.
      */
     saveUser(user) {
         if (user.id) {
@@ -44,6 +49,7 @@ class UserService {
     /**
      * Deletes a user by their ID.
      * @param {Number} id - User ID.
+     * @throws Will throw an error if the user with the specified ID does not exist.
      */
     deleteUser(id) {
         if (!users.has(id)) {
@@ -73,4 +79,3 @@ class UserService {
 }
 
 module.exports = new UserService();
-```
