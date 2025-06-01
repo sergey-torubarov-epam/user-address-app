@@ -1,4 +1,3 @@
-# New file content starts from this line #
 const { expect } = require('chai');
 const sinon = require('sinon');
 const UserService = require('../../services/userService');
@@ -37,6 +36,7 @@ describe('UserService', () => {
         sinon.restore();
     });
 
+    // Test for getting all users
     it('getAllUsers should return all users', async () => {
         // Arrange
         userRepositoryMock.findAll.resolves([user1, user2]);
@@ -51,6 +51,7 @@ describe('UserService', () => {
         sinon.assert.calledOnce(userRepositoryMock.findAll);
     });
 
+    // Test for getting a user by ID when the user exists
     it('getUserById with an existing ID should return the user', async () => {
         // Arrange
         userRepositoryMock.findById.resolves(user1);
@@ -64,6 +65,7 @@ describe('UserService', () => {
         sinon.assert.calledOnceWithExactly(userRepositoryMock.findById, 1);
     });
 
+    // Test for getting a user by ID when the user does not exist
     it('getUserById with a non-existing ID should return null', async () => {
         // Arrange
         userRepositoryMock.findById.resolves(null);
@@ -76,6 +78,7 @@ describe('UserService', () => {
         sinon.assert.calledOnceWithExactly(userRepositoryMock.findById, 3);
     });
 
+    // Test for saving a user
     it('saveUser should save and return the user', async () => {
         // Arrange
         userRepositoryMock.save.resolves(user1);
@@ -89,6 +92,7 @@ describe('UserService', () => {
         sinon.assert.calledOnceWithExactly(userRepositoryMock.save, user1);
     });
 
+    // Test for deleting a user by ID
     it('deleteUser should call repository deleteById', async () => {
         // Arrange
         userRepositoryMock.deleteById.resolves();
@@ -100,6 +104,7 @@ describe('UserService', () => {
         sinon.assert.calledOnceWithExactly(userRepositoryMock.deleteById, 1);
     });
 
+    // Test for checking if a user exists by email (when the email exists)
     it('existsByEmail with an existing email should return true', async () => {
         // Arrange
         userRepositoryMock.existsByEmail.resolves(true);
@@ -112,6 +117,7 @@ describe('UserService', () => {
         sinon.assert.calledOnceWithExactly(userRepositoryMock.existsByEmail, 'john@example.com');
     });
 
+    // Test for checking if a user exists by email (when the email does not exist)
     it('existsByEmail with a non-existing email should return false', async () => {
         // Arrange
         userRepositoryMock.existsByEmail.resolves(false);
@@ -124,6 +130,7 @@ describe('UserService', () => {
         sinon.assert.calledOnceWithExactly(userRepositoryMock.existsByEmail, 'nonexistent@example.com');
     });
 
+    // Test for finding a user by email when the email exists
     it('findByEmail with an existing email should return the user', async () => {
         // Arrange
         userRepositoryMock.findByEmail.resolves(user1);
@@ -137,6 +144,7 @@ describe('UserService', () => {
         sinon.assert.calledOnceWithExactly(userRepositoryMock.findByEmail, 'john@example.com');
     });
 
+    // Test for finding a user by email when the email does not exist
     it('findByEmail with a non-existing email should return null', async () => {
         // Arrange
         userRepositoryMock.findByEmail.resolves(null);
@@ -149,4 +157,3 @@ describe('UserService', () => {
         sinon.assert.calledOnceWithExactly(userRepositoryMock.findByEmail, 'nonexistent@example.com');
     });
 });
-# New file content ends this line #
