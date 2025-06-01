@@ -7,6 +7,7 @@ const addressService = require('../services/addressService');
 // List all addresses
 router.get('/', async (req, res) => {
     try {
+        // Fetching all addresses from the service and rendering the 'address/list' view with the fetched addresses
         const addresses = await addressService.getAllAddresses();
         res.render('address/list', { addresses });
     } catch (error) {
@@ -16,19 +17,25 @@ router.get('/', async (req, res) => {
 
 // Show form for creating a new address
 router.get('/new', (req, res) => {
+    // Rendering the form for creating a new address with an empty address object
     res.render('address/form', { address: {} });
 });
 
 // Create a new address
 router.post('/', async (req, res) => {
     try {
+        // Getting the address information from the request body
         const address = req.body;
+        // Validating the address
         const validationErrors = addressService.validateAddress(address);
         if (validationErrors.length > 0) {
+            // Rendering the form with validation errors
             return res.status(400).render('address/form', { address, errors: validationErrors });
         }
+        // Creating the address in the service
         await addressService.createAddress(address);
         req.flash('successMessage', 'Address created successfully!');
+        // Redirecting to the list of addresses after successful creation
         res.redirect('/addresses');
     } catch (error) {
         res.status(500).send('Error creating address');
@@ -38,10 +45,13 @@ router.post('/', async (req, res) => {
 // Show form for editing an address
 router.get('/:id/edit', async (req, res) => {
     try {
+        // Fetching the address by ID from the service
         const address = await addressService.getAddressById(req.params.id);
         if (address) {
+            // Rendering the form for editing the address with the fetched address data
             res.render('address/form', { address });
         } else {
+            // Redirecting to the list of addresses if the address is not found
             res.redirect('/addresses');
         }
     } catch (error) {
@@ -52,14 +62,19 @@ router.get('/:id/edit', async (req, res) => {
 // Update an existing address
 router.post('/:id', async (req, res) => {
     try {
+        // Getting the address information from the request body and setting its ID
         const address = req.body;
         address.id = req.params.id;
+        // Validating the address
         const validationErrors = addressService.validateAddress(address);
         if (validationErrors.length > 0) {
+            // Rendering the form with validation errors
             return res.status(400).render('address/form', { address, errors: validationErrors });
         }
+        // Updating the address in the service
         await addressService.updateAddress(req.params.id, address);
         req.flash('successMessage', 'Address updated successfully!');
+        // Redirecting to the list of addresses after successful update
         res.redirect('/addresses');
     } catch (error) {
         res.status(500).send('Error updating address');
@@ -69,8 +84,10 @@ router.post('/:id', async (req, res) => {
 // Delete an address
 router.get('/:id/delete', async (req, res) => {
     try {
+        // Deleting the address by ID from the service
         await addressService.deleteAddress(req.params.id);
         req.flash('successMessage', 'Address deleted successfully!');
+        // Redirecting to the list of addresses after successful deletion
         res.redirect('/addresses');
     } catch (error) {
         res.status(500).send('Error deleting address');
@@ -78,98 +95,3 @@ router.get('/:id/delete', async (req, res) => {
 });
 
 module.exports = router;
-```
-
-```javascript
-// services/addressService.js
-
-const Address = require('../models/Address'); // Assuming you have an Address model
-
-// Fetch all addresses
-async function getAllAddresses() {
-    try {
-        return await Address.find();
-    } catch (error) {
-        throw new Error('Error fetching addresses');
-    }
-}
-
-// Fetch an address by ID
-async function getAddressById(id) {
-    try {
-        return await Address.findById(id);
-    } catch (error) {
-        throw new Error('Error fetching address');
-    }
-}
-
-// Validate address input
-function validateAddress(address) {
-    const errors = [];
-    if (!address.street || address.street.trim() === '') {
-        errors.push('Street is required');
-    }
-    if (!address.city || address.city.trim() === '') {
-        errors.push('City is required');
-    }
-    if (!address.state || address.state.trim() === '') {
-        errors.push('State is required');
-    }
-    if (!address.zip || address.zip.trim() === '') {
-        errors.push('ZIP code is required');
-    }
-    return errors;
-}
-
-// Create a new address
-async function createAddress(address) {
-    try {
-        const newAddress = new Address(address);
-        await newAddress.save();
-    } catch (error) {
-        throw new Error('Error creating address');
-    }
-}
-
-// Update an existing address
-async function updateAddress(id, address) {
-    try {
-        await Address.findByIdAndUpdate(id, address);
-    } catch (error) {
-        throw new Error('Error updating address');
-    }
-}
-
-// Delete an address
-async function deleteAddress(id) {
-    try {
-        await Address.findByIdAndDelete(id);
-    } catch (error) {
-        throw new Error('Error deleting address');
-    }
-}
-
-module.exports = {
-    getAllAddresses,
-    getAddressById,
-    validateAddress,
-    createAddress,
-    updateAddress,
-    deleteAddress,
-};
-```
-
-```javascript
-// models/Address.js
-
-const mongoose = require('mongoose');
-
-const addressSchema = new mongoose.Schema({
-    street: { type: String, required: true },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    zip: { type: String, required: true },
-});
-
-module.exports = mongoose.model('Address', addressSchema);
-```
