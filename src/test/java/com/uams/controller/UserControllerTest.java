@@ -14,6 +14,7 @@ describe('UserController', () => {
     beforeEach(() => {
         sandbox = sinon.createSandbox();
 
+        // Initializing a mock user object
         user = {
             userId: 1,
             email: 'john@example.com',
@@ -24,6 +25,7 @@ describe('UserController', () => {
             addresses: new Set(),
         };
 
+        // Initializing a mock address object
         address = {
             addressId: 1,
             buildingName: 'Building A',
@@ -39,6 +41,7 @@ describe('UserController', () => {
         sandbox.restore();
     });
 
+    // Test to check the user list endpoint
     it('GET /users - should return user list view', async () => {
         sandbox.stub(userService, 'getAllUsers').returns([user]);
 
@@ -49,6 +52,7 @@ describe('UserController', () => {
         sandbox.assert.calledOnce(userService.getAllUsers);
     });
 
+    // Test to check the user creation form endpoint
     it('GET /users/new - should return user creation form', async () => {
         const res = await request(app).get('/users/new');
 
@@ -56,6 +60,7 @@ describe('UserController', () => {
         expect(res.text).to.include('user/form'); // Assuming the view renders this
     });
 
+    // Test to check creating a new user
     it('POST /users - should create a new user and redirect', async () => {
         sandbox.stub(userService, 'existsByEmail').returns(false);
         sandbox.stub(userService, 'saveUser').returns(user);
@@ -70,6 +75,7 @@ describe('UserController', () => {
         sandbox.assert.calledOnce(userService.saveUser);
     });
 
+    // Test to check rejecting user creation if email already exists
     it('POST /users - should reject creation for existing email', async () => {
         sandbox.stub(userService, 'existsByEmail').returns(true);
 
@@ -83,6 +89,7 @@ describe('UserController', () => {
         sandbox.assert.notCalled(userService.saveUser);
     });
 
+    // Test to check user edit form endpoint for existing user
     it('GET /users/:id/edit - should return edit form for existing user', async () => {
         sandbox.stub(userService, 'getUserById').returns(Promise.resolve(user));
 
@@ -93,6 +100,7 @@ describe('UserController', () => {
         sandbox.assert.calledOnce(userService.getUserById);
     });
 
+    // Test to check redirection if user does not exist for edit
     it('GET /users/:id/edit - should redirect if user does not exist', async () => {
         sandbox.stub(userService, 'getUserById').returns(Promise.resolve(null));
 
@@ -103,6 +111,7 @@ describe('UserController', () => {
         sandbox.assert.calledOnce(userService.getUserById);
     });
 
+    // Test to check deleting a user
     it('GET /users/:id/delete - should delete user and redirect', async () => {
         sandbox.stub(userService, 'deleteUser').returns(Promise.resolve());
 
@@ -113,6 +122,7 @@ describe('UserController', () => {
         sandbox.assert.calledOnce(userService.deleteUser);
     });
 
+    // Test to check user addresses view endpoint for existing users
     it('GET /users/:id/addresses - should return user addresses view', async () => {
         sandbox.stub(userService, 'getUserById').returns(Promise.resolve(user));
         sandbox.stub(addressService, 'getAllAddresses').returns([address]);
@@ -125,6 +135,7 @@ describe('UserController', () => {
         sandbox.assert.calledOnce(addressService.getAllAddresses);
     });
 
+    // Test to check redirection if user does not exist for addresses view
     it('GET /users/:id/addresses - should redirect if user does not exist', async () => {
         sandbox.stub(userService, 'getUserById').returns(Promise.resolve(null));
 
@@ -136,4 +147,3 @@ describe('UserController', () => {
         sandbox.assert.notCalled(addressService.getAllAddresses);
     });
 });
-```
