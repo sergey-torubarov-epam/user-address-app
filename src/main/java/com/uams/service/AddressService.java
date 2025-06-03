@@ -16,6 +16,9 @@ class AddressService {
 
     /**
      * Retrieves all addresses from the repository.
+     * Purpose: To fetch and return a list of all addresses stored in the system.
+     * Use case: When needing to display or process all available addresses.
+     * 
      * @returns {Promise<Array>} A promise that resolves to an array of address objects.
      * @throws Will throw an error if there's an issue fetching the addresses.
      */
@@ -29,6 +32,9 @@ class AddressService {
 
     /**
      * Retrieves a specific address by its ID from the repository.
+     * Purpose: To fetch and return a single address based on its unique identifier.
+     * Use case: When needing to display or process details of a specific address.
+     * 
      * @param {number|string} id - The ID of the address to fetch.
      * @returns {Promise<Object>} A promise that resolves to the address object if found.
      * @throws Will throw an error if there's an issue fetching the address or if the address is not found.
@@ -47,6 +53,9 @@ class AddressService {
 
     /**
      * Saves a new address to the repository.
+     * Purpose: To create or update an address in the system.
+     * Use case: When adding a new address or updating an existing one.
+     * 
      * @param {Object} address - The address object to save.
      * @returns {Promise<Object>} A promise that resolves to the saved address object.
      * @throws Will throw an error if there's an issue saving the address.
@@ -61,6 +70,9 @@ class AddressService {
 
     /**
      * Deletes an address from the repository by its ID.
+     * Purpose: To remove a specific address from the system.
+     * Use case: When an address needs to be deleted or removed from the database.
+     * 
      * @param {number|string} id - The ID of the address to delete.
      * @returns {Promise<void>} A promise that resolves when the deletion is complete.
      * @throws Will throw an error if there's an issue deleting the address or if the address is not found.
