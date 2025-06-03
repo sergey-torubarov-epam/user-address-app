@@ -2,7 +2,7 @@
 
 ## Overview
 
-The User Address Management System is a comprehensive web application designed to manage user profiles and their associated addresses. It provides an intuitive interface for creating, updating, retrieving, and deleting user and address information with a focus on data integrity and usability.
+The User Address Management System is a comprehensive web application designed to manage user profiles, their associated addresses, orders, and products. It provides an intuitive interface for creating, updating, retrieving, and deleting user, address, order, and product information with a focus on data integrity and usability.
 
 ## Features
 
@@ -23,6 +23,20 @@ The User Address Management System is a comprehensive web application designed t
   - Remove addresses from users
   - View all addresses for a specific user
   - Search functionality to find users and addresses
+
+- **Order Management**
+  - Create new orders
+  - View order details
+  - Update order status
+  - Cancel orders
+  - View order history for users
+
+- **Product Management**
+  - Add new products
+  - Update product information
+  - Delete products
+  - View product inventory
+  - Search for products
 
 ## Technology Stack
 
@@ -57,6 +71,26 @@ The application uses the following database tables:
    - user_id (BIGINT, Foreign Key)
    - address_id (BIGINT, Foreign Key)
 
+4. **orders**
+   - order_id (BIGINT, Primary Key)
+   - user_id (BIGINT, Foreign Key)
+   - order_date (DATETIME)
+   - total_amount (DECIMAL(10,2))
+   - status (VARCHAR(50))
+
+5. **products**
+   - product_id (BIGINT, Primary Key)
+   - name (VARCHAR(255))
+   - description (TEXT)
+   - price (DECIMAL(10,2))
+   - stock_quantity (INT)
+
+6. **order_items** (Junction Table)
+   - order_id (BIGINT, Foreign Key)
+   - product_id (BIGINT, Foreign Key)
+   - quantity (INT)
+   - price (DECIMAL(10,2))
+
 ## Project Structure
 
 ```
@@ -69,18 +103,28 @@ user-address-management-system/
 │   │   │           ├── controller/
 │   │   │           │   ├── AddressController.java
 │   │   │           │   ├── HomeController.java
-│   │   │           │   └── UserController.java
+│   │   │           │   ├── UserController.java
+│   │   │           │   ├── OrderController.java
+│   │   │           │   └── ProductController.java
 │   │   │           ├── model/
 │   │   │           │   ├── Address.java
-│   │   │           │   └── User.java
+│   │   │           │   ├── User.java
+│   │   │           │   ├── Order.java
+│   │   │           │   └── Product.java
 │   │   │           ├── repository/
 │   │   │           │   ├── AddressRepository.java
-│   │   │           │   └── UserRepository.java
+│   │   │           │   ├── UserRepository.java
+│   │   │           │   ├── OrderRepository.java
+│   │   │           │   └── ProductRepository.java
 │   │   │           ├── service/
 │   │   │           │   ├── AddressService.java
 │   │   │           │   ├── AddressServiceImpl.java
 │   │   │           │   ├── UserService.java
-│   │   │           │   └── UserServiceImpl.java
+│   │   │           │   ├── UserServiceImpl.java
+│   │   │           │   ├── OrderService.java
+│   │   │           │   ├── OrderServiceImpl.java
+│   │   │           │   ├── ProductService.java
+│   │   │           │   └── ProductServiceImpl.java
 │   │   │           └── UserAddressManagementSystemApplication.java
 │   │   └── resources/
 │   │       ├── templates/
@@ -89,8 +133,15 @@ user-address-management-system/
 │   │       │   │   └── list.html
 │   │       │   ├── layout/
 │   │       │   │   └── main.html
-│   │       │   └── user/
-│   │       │       ├── addresses.html
+│   │       │   ├── user/
+│   │       │   │   ├── addresses.html
+│   │       │   │   ├── form.html
+│   │       │   │   └── list.html
+│   │       │   ├── order/
+│   │       │   │   ├── form.html
+│   │       │   │   ├── list.html
+│   │       │   │   └── details.html
+│   │       │   └── product/
 │   │       │       ├── form.html
 │   │       │       └── list.html
 │   │       └── application.properties
@@ -100,10 +151,14 @@ user-address-management-system/
 │               └── uams/
 │                   ├── controller/
 │                   │   ├── AddressControllerTest.java
-│                   │   └── UserControllerTest.java
+│                   │   ├── UserControllerTest.java
+│                   │   ├── OrderControllerTest.java
+│                   │   └── ProductControllerTest.java
 │                   └── service/
 │                       ├── AddressServiceImplTest.java
-│                       └── UserServiceImplTest.java
+│                       ├── UserServiceImplTest.java
+│                       ├── OrderServiceImplTest.java
+│                       └── ProductServiceImplTest.java
 └── pom.xml
 ```
 
@@ -173,6 +228,28 @@ spring.datasource.password=your_password
 - `GET /addresses/{id}/edit` - Show form to edit an address
 - `POST /addresses/{id}` - Update an address
 - `GET /addresses/{id}/delete` - Delete an address
+
+### Order Endpoints
+
+- `GET /orders` - List all orders
+- `GET /orders/new` - Show form to create a new order
+- `POST /orders` - Create a new order
+- `GET /orders/{id}` - View order details
+- `GET /orders/{id}/edit` - Show form to edit an order
+- `POST /orders/{id}` - Update an order
+- `GET /orders/{id}/cancel` - Cancel an order
+- `GET /users/{id}/orders` - View order history for a user
+
+### Product Endpoints
+
+- `GET /products` - List all products
+- `GET /products/new` - Show form to create a new product
+- `POST /products` - Create a new product
+- `GET /products/{id}` - View product details
+- `GET /products/{id}/edit` - Show form to edit a product
+- `POST /products/{id}` - Update a product
+- `GET /products/{id}/delete` - Delete a product
+- `GET /products/search` - Search for products
 
 ## Testing
 
