@@ -13,6 +13,11 @@ class UserService {
      * Fetch all users from the repository.
      * @returns {Promise<Array>} A promise that resolves to an array of users.
      * @throws {Error} Throws an error if there is an issue fetching users.
+     * 
+     * Implementation:
+     * 1. Calls the findAll method of the userRepository.
+     * 2. Returns the result if successful.
+     * 3. Throws a custom error if an exception occurs.
      */
     async getAllUsers() {
         try {
@@ -27,6 +32,11 @@ class UserService {
      * @param {string} id - The ID of the user to fetch.
      * @returns {Promise<Object|null>} A promise that resolves to the user object if found, or null if not found.
      * @throws {Error} Throws an error if there is an issue fetching the user by ID.
+     * 
+     * Implementation:
+     * 1. Calls the findById method of the userRepository with the provided ID.
+     * 2. Returns the user object if found, or null if not found.
+     * 3. Throws a custom error if an exception occurs.
      */
     async getUserById(id) {
         try {
@@ -42,6 +52,11 @@ class UserService {
      * @param {Object} user - The user object to save.
      * @returns {Promise<Object>} A promise that resolves to the saved user object.
      * @throws {Error} Throws an error if there is an issue saving the user.
+     * 
+     * Implementation:
+     * 1. Calls the save method of the userRepository with the provided user object.
+     * 2. Returns the saved user object.
+     * 3. Throws a custom error if an exception occurs.
      */
     async saveUser(user) {
         try {
@@ -56,6 +71,10 @@ class UserService {
      * @param {string} id - The ID of the user to delete.
      * @returns {Promise<void>} A promise that resolves when the user is deleted.
      * @throws {Error} Throws an error if there is an issue deleting the user.
+     * 
+     * Implementation:
+     * 1. Calls the deleteById method of the userRepository with the provided ID.
+     * 2. Throws a custom error if an exception occurs.
      */
     async deleteUser(id) {
         try {
@@ -70,6 +89,11 @@ class UserService {
      * @param {string} email - The email to check.
      * @returns {Promise<boolean>} A promise that resolves to true if the email exists, false otherwise.
      * @throws {Error} Throws an error if there is an issue checking the email.
+     * 
+     * Implementation:
+     * 1. Calls the existsByEmail method of the userRepository with the provided email.
+     * 2. Returns the boolean result indicating whether the email exists.
+     * 3. Throws a custom error if an exception occurs.
      */
     async existsByEmail(email) {
         try {
@@ -84,6 +108,11 @@ class UserService {
      * @param {string} email - The email of the user to fetch.
      * @returns {Promise<Object|null>} A promise that resolves to the user object if found, or null if not found.
      * @throws {Error} Throws an error if there is an issue fetching the user by email.
+     * 
+     * Implementation:
+     * 1. Calls the findByEmail method of the userRepository with the provided email.
+     * 2. Returns the user object if found, or null if not found.
+     * 3. Throws a custom error if an exception occurs.
      */
     async findByEmail(email) {
         try {
