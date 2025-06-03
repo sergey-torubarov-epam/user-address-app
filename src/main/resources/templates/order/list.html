@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="layout/main :: head(title='Orders - Financial Order Management System')">
+</head>
+<body>
+    <header th:replace="layout/main :: header"></header>
+    <nav th:replace="layout/main :: nav"></nav>
+    <div class="container">
+
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <h2>Orders</h2>
+    <a th:href="@{/orders/new}" class="btn btn-primary mb-3">Add New Order</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Order Number</th>
+                <th>Email</th>
+                <th>Order Date</th>
+                <th>Status</th>
+                <th>Total Amount</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="order : ${orders}">
+                <td th:text="${order.orderId}"></td>
+                <td th:text="${order.orderNumber}"></td>
+                <td th:text="${order.email}"></td>
+                <td th:text="${#temporals.format(order.orderDate, 'yyyy-MM-dd HH:mm')}"></td>
+                <td th:text="${order.status}"></td>
+                <td th:text="${#numbers.formatDecimal(order.totalAmount, 1, 2)}"></td>
+                <td>
+                    <a th:href="@{/orders/edit/{id}(id=${order.orderId})}" class="btn btn-sm btn-primary">Edit</a>
+                    <a th:href="@{/orders/delete/{id}(id=${order.orderId})}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this order?')">Delete</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
