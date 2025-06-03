@@ -1,107 +1,40 @@
-const AddressRepository = require('../repository/addressRepository');
+package com.uams.service;
 
-/**
- * AddressService is responsible for managing address related operations,
- * including fetching, saving, and deleting addresses.
- */
-class AddressService {
-    /**
-     * Creates an instance of AddressService.
-     * 
-     * @param {AddressRepository} addressRepository - The repository used to interact with the data source for address data.
-     */
-    constructor(addressRepository) {
+import com.uams.model.Address;
+import com.uams.repository.AddressRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class AddressServiceImpl implements AddressService {
+
+    private final AddressRepository addressRepository;
+
+    @Autowired
+    public AddressServiceImpl(AddressRepository addressRepository) {
         this.addressRepository = addressRepository;
     }
 
-    /**
-     * Retrieves all addresses from the data source.
-     *
-     * Implementation:
-     * 1. Calls the findAll method of the addressRepository to fetch all addresses.
-     * 2. If successful, returns the array of addresses.
-     * 3. If an error occurs, throws a new Error with a descriptive message.
-     *
-     * @returns {Promise<Array>} - A promise that resolves to an array of addresses.
-     * @throws {Error} - Throws an error if the addresses could not be fetched.
-     */
-    async getAllAddresses() {
-        try {
-            return await this.addressRepository.findAll();
-        } catch (error) {
-            throw new Error(`Error fetching all addresses: ${error.message}`);
-        }
+    @Override
+    public List<Address> getAllAddresses() {
+        return addressRepository.findAll();
     }
 
-    /**
-     * Retrieves an address by its ID from the data source.
-     *
-     * Implementation:
-     * 1. Calls the findById method of the addressRepository with the provided ID.
-     * 2. If the address is found, returns it.
-     * 3. If the address is not found, throws a new Error.
-     * 4. If any other error occurs during the process, throws a new Error with a descriptive message.
-     *
-     * @param {number} id - The ID of the address to retrieve.
-     * @returns {Promise<Object>} - A promise that resolves to the address object.
-     * @throws {Error} - Throws an error if the address cannot be found or if there is an issue fetching the address.
-     */
-    async getAddressById(id) {
-        try {
-            const address = await this.addressRepository.findById(id);
-            if (!address) {
-                throw new Error(`Address with ID ${id} not found`);
-            }
-            return address;
-        } catch (error) {
-            throw new Error(`Error fetching address with ID ${id}: ${error.message}`);
-        }
+    @Override
+    public Optional<Address> getAddressById(Long id) {
+        return addressRepository.findById(id);
     }
 
-    /**
-     * Saves a new address to the data source.
-     *
-     * Implementation:
-     * 1. Calls the save method of the addressRepository with the provided address object.
-     * 2. If successful, returns the saved address object.
-     * 3. If an error occurs during the saving process, throws a new Error with a descriptive message.
-     *
-     * @param {Object} address - The address object to be saved.
-     * @returns {Promise<Object>} - A promise that resolves to the saved address object.
-     * @throws {Error} - Throws an error if the address could not be saved.
-     */
-    async saveAddress(address) {
-        try {
-            return await this.addressRepository.save(address);
-        } catch (error) {
-            throw new Error(`Error saving address: ${error.message}`);
-        }
+    @Override
+    public Address saveAddress(Address address) {
+        return addressRepository.save(address);
     }
 
-    /**
-     * Deletes an address by its ID from the data source.
-     *
-     * Implementation:
-     * 1. Checks if the address exists by calling findById method of the addressRepository.
-     * 2. If the address doesn't exist, throws a new Error.
-     * 3. If the address exists, calls the deleteById method of the addressRepository to delete it.
-     * 4. If any error occurs during the process, throws a new Error with a descriptive message.
-     *
-     * @param {number} id - The ID of the address to delete.
-     * @returns {Promise<void>} - A promise that resolves when the address has been deleted.
-     * @throws {Error} - Throws an error if the address cannot be found or if there is an issue deleting the address.
-     */
-    async deleteAddress(id) {
-        try {
-            const addressExists = await this.addressRepository.findById(id);
-            if (!addressExists) {
-                throw new Error(`Address with ID ${id} not found`);
-            }
-            await this.addressRepository.deleteById(id);
-        } catch (error) {
-            throw new Error(`Error deleting address with ID ${id}: ${error.message}`);
-        }
+    @Override
+    public void deleteAddress(Long id) {
+        addressRepository.deleteById(id);
     }
 }
-
-module.exports = new AddressService(new AddressRepository());

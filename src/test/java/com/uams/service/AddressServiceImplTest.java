@@ -1,99 +1,118 @@
-const { expect } = require('chai');
-const sinon = require('sinon');
-const AddressService = require('../../services/addressService');
-const AddressRepository = require('../../repositories/addressRepository');
+package com.uams.service;
 
-describe('AddressService', () => {
-  let addressService;
-  let addressRepositoryStub;
+import com.uams.model.Address;
+import com.uams.repository.AddressRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-  const address1 = {
-    addressId: 1,
-    buildingName: 'Building A',
-    street: '123 Main St',
-    city: 'New York',
-    state: 'NY',
-    pincode: '10001',
-  };
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
-  const address2 = {
-    addressId: 2,
-    buildingName: 'Building B',
-    street: '456 Oak Ave',
-    city: 'Los Angeles',
-    state: 'CA',
-    pincode: '90001',
-  };
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-  beforeEach(() => {
-    addressRepositoryStub = sinon.createStubInstance(AddressRepository);
-    addressService = new AddressService(addressRepositoryStub);
-  });
+@ExtendWith(MockitoExtension.class)
+public class AddressServiceImplTest {
 
-  describe('getAllAddresses', () => {
-    it('should return all addresses', async () => {
-      // Arrange: Mock the address repository to return predefined addresses.
-      addressRepositoryStub.findAll.resolves([address1, address2]);
+    @Mock
+    private AddressRepository addressRepository;
 
-      // Act: Call the service to retrieve all addresses.
-      const addresses = await addressService.getAllAddresses();
+    @InjectMocks
+    private AddressServiceImpl addressService;
 
-      // Assert: Verify the service method returns the expected addresses and the repository method was called once.
-      expect(addresses).to.deep.equal([address1, address2]);
-      sinon.assert.calledOnce(addressRepositoryStub.findAll);
-    });
-  });
+    private Address address1;
+    private Address address2;
 
-  describe('getAddressById', () => {
-    it('should return an address when given a valid ID', async () => {
-      // Arrange: Mock the address repository to return address1 for id 1.
-      addressRepositoryStub.findById.resolves(address1);
+    @BeforeEach
+    void setUp() {
+        address1 = new Address();
+        address1.setAddressId(1L);
+        address1.setBuildingName("Building A");
+        address1.setStreet("123 Main St");
+        address1.setCity("New York");
+        address1.setState("NY");
+        address1.setPincode("10001");
 
-      // Act: Call the service to retrieve the address with id 1.
-      const result = await addressService.getAddressById(1);
+        address2 = new Address();
+        address2.setAddressId(2L);
+        address2.setBuildingName("Building B");
+        address2.setStreet("456 Oak Ave");
+        address2.setCity("Los Angeles");
+        address2.setState("CA");
+        address2.setPincode("90001");
+    }
 
-      // Assert: Verify the service method returns the expected address and the repository method was called once with id 1.
-      expect(result).to.deep.equal(address1);
-      sinon.assert.calledOnceWithExactly(addressRepositoryStub.findById, 1);
-    });
+    @Test
+    void getAllAddresses_ShouldReturnAllAddresses() {
+        // Arrange
+        when(addressRepository.findAll()).thenReturn(Arrays.asList(address1, address2));
 
-    it('should return null when given a non-existing ID', async () => {
-      // Arrange: Mock the address repository to return null for id 3.
-      addressRepositoryStub.findById.resolves(null);
+        // Act
+        List<Address> addresses = addressService.getAllAddresses();
 
-      // Act: Call the service to retrieve the address with id 3.
-      const result = await addressService.getAddressById(3);
+        // Assert
+        assertEquals(2, addresses.size());
+        assertEquals(address1.getStreet(), addresses.get(0).getStreet());
+        assertEquals(address2.getStreet(), addresses.get(1).getStreet());
+        verify(addressRepository, times(1)).findAll();
+    }
 
-      // Assert: Verify the service method returns null and the repository method was called once with id 3.
-      expect(result).to.be.null;
-      sinon.assert.calledOnceWithExactly(addressRepositoryStub.findById, 3);
-    });
-  });
+    @Test
+    void getAddressById_WithExistingId_ShouldReturnAddress() {
+        // Arrange
+        when(addressRepository.findById(1L)).thenReturn(Optional.of(address1));
 
-  describe('saveAddress', () => {
-    it('should save and return the created address', async () => {
-      // Arrange: Mock the address repository to save and return address1.
-      addressRepositoryStub.save.resolves(address1);
+        // Act
+        Optional<Address> result = addressService.getAddressById(1L);
 
-      // Act: Call the service to save address1.
-      const savedAddress = await addressService.saveAddress(address1);
+        // Assert
+        assertTrue(result.isPresent());
+        assertEquals(address1.getStreet(), result.get().getStreet());
+        verify(addressRepository, times(1)).findById(1L);
+    }
 
-      // Assert: Verify the service method returns the saved address and the repository method was called once with address1.
-      expect(savedAddress).to.deep.equal(address1);
-      sinon.assert.calledOnceWithExactly(addressRepositoryStub.save, address1);
-    });
-  });
+    @Test
+    void getAddressById_WithNonExistingId_ShouldReturnEmpty() {
+        // Arrange
+        when(addressRepository.findById(3L)).thenReturn(Optional.empty());
 
-  describe('deleteAddress', () => {
-    it('should delete the address by ID', async () => {
-      // Arrange: Mock the address repository to simulate deleting an address by id 1.
-      addressRepositoryStub.deleteById.resolves();
+        // Act
+        Optional<Address> result = addressService.getAddressById(3L);
 
-      // Act: Call the service to delete the address with id 1.
-      await addressService.deleteAddress(1);
+        // Assert
+        assertFalse(result.isPresent());
+        verify(addressRepository, times(1)).findById(3L);
+    }
 
-      // Assert: Verify the repository method was called once with id 1.
-      sinon.assert.calledOnceWithExactly(addressRepositoryStub.deleteById, 1);
-    });
-  });
-});
+    @Test
+    void saveAddress_ShouldReturnSavedAddress() {
+        // Arrange
+        when(addressRepository.save(any(Address.class))).thenReturn(address1);
+
+        // Act
+        Address savedAddress = addressService.saveAddress(address1);
+
+        // Assert
+        assertNotNull(savedAddress);
+        assertEquals(address1.getStreet(), savedAddress.getStreet());
+        verify(addressRepository, times(1)).save(address1);
+    }
+
+    @Test
+    void deleteAddress_ShouldCallRepositoryDeleteById() {
+        // Arrange
+        doNothing().when(addressRepository).deleteById(1L);
+
+        // Act
+        addressService.deleteAddress(1L);
+
+        // Assert
+        verify(addressRepository, times(1)).deleteById(1L);
+    }
+}

@@ -1,63 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Form - User Address Management System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="layout/main :: head(title='User Form - Financial Address Management System')">
 </head>
 <body>
+    <header th:replace="layout/main :: header"></header>
+    <nav th:replace="layout/main :: nav"></nav>
     <div class="container">
-        <%- include('layout/main', { nav: true }); %>
 
-        <h2><%= user && user.userId ? 'Edit User' : 'Create User' %></h2>
+        <h2 th:text="${user.userId == null ? 'Create User' : 'Edit User'}"></h2>
 
-        <form action="<%= user && user.userId ? `/users/${user.userId}` : '/users' %>" method="post">
-            <div class="mb-3">
+        <form th:action="${user.userId == null ? '/users' : '/users/' + user.userId}" th:object="${user}" method="post" class="form">
+            <div class="form-group">
                 <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email" value="<%= user ? user.email : '' %>" required>
-                <% if (errors && errors.email) { %>
-                    <div class="text-danger"><%= errors.email.msg %></div>
-                <% } %>
+                <input type="email" class="form-control" id="email" th:field="*{email}" required>
+                <div class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
             </div>
             
             <div class="mb-3">
                 <label for="firstName" class="form-label">First Name</label>
-                <input type="text" class="form-control" id="firstName" name="firstName" value="<%= user ? user.firstName : '' %>" required>
-                <% if (errors && errors.firstName) { %>
-                    <div class="text-danger"><%= errors.firstName.msg %></div>
-                <% } %>
+                <input type="text" class="form-control" id="firstName" th:field="*{firstName}" required>
+                <div class="text-danger" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></div>
             </div>
             
             <div class="mb-3">
                 <label for="lastName" class="form-label">Last Name</label>
-                <input type="text" class="form-control" id="lastName" name="lastName" value="<%= user ? user.lastName : '' %>" required>
-                <% if (errors && errors.lastName) { %>
-                    <div class="text-danger"><%= errors.lastName.msg %></div>
-                <% } %>
+                <input type="text" class="form-control" id="lastName" th:field="*{lastName}" required>
+                <div class="text-danger" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></div>
             </div>
             
             <div class="mb-3">
                 <label for="mobileNumber" class="form-label">Mobile Number</label>
-                <input type="text" class="form-control" id="mobileNumber" name="mobileNumber" value="<%= user ? user.mobileNumber : '' %>">
+                <input type="text" class="form-control" id="mobileNumber" th:field="*{mobileNumber}">
             </div>
             
             <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" <%= user && user.userId ? '' : 'required' %>>
-                <% if (errors && errors.password) { %>
-                    <div class="text-danger"><%= errors.password.msg %></div>
-                <% } %>
-                <% if (user && user.userId) { %>
-                    <div class="form-text">Leave blank to keep current password</div>
-                <% } %>
+                <input type="password" class="form-control" id="password" th:field="*{password}" th:required="${user.userId == null}">
+                <div class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                <div class="form-text" th:if="${user.userId != null}">Leave blank to keep current password</div>
             </div>
             
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a href="/users" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn">Save</button>
+            <a th:href="@{/users}" class="btn">Cancel</a>
         </form>
     </div>
 
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
