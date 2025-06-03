@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,14 +8,16 @@
 </head>
 <body>
     <div class="container">
-        <div th:replace="layout/main :: nav"></div>
+        <%- include('../layout/main', { nav: true }) %>
 
-        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-            <span th:text="${successMessage}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+        <% if (successMessage) { %>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <span><%= successMessage %></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <% } %>
 
-        <h2>Addresses for <span th:text="${user.firstName + ' ' + user.lastName}"></span></h2>
+        <h2>Addresses for <%= user.firstName + ' ' + user.lastName %></h2>
         
         <div class="mb-4">
             <h4>Current Addresses</h4>
@@ -33,23 +35,27 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:if="${addresses.empty}">
-                            <td colspan="7" class="text-center">No addresses found</td>
-                        </tr>
-                        <tr th:each="address : ${addresses}">
-                            <td th:text="${address.addressId}"></td>
-                            <td th:text="${address.buildingName}"></td>
-                            <td th:text="${address.street}"></td>
-                            <td th:text="${address.city}"></td>
-                            <td th:text="${address.state}"></td>
-                            <td th:text="${address.pincode}"></td>
-                            <td>
-                                <a th:href="@{/addresses/{id}/edit(id=${address.addressId})}" class="btn btn-sm btn-warning">Edit</a>
-                                <a th:href="@{/users/{userId}/addresses/{addressId}/remove(userId=${user.userId}, addressId=${address.addressId})}" 
-                                   class="btn btn-sm btn-danger"
-                                   onclick="return confirm('Are you sure you want to remove this address from the user?')">Remove</a>
-                            </td>
-                        </tr>
+                        <% if (addresses.length === 0) { %>
+                            <tr>
+                                <td colspan="7" class="text-center">No addresses found</td>
+                            </tr>
+                        <% } %>
+                        <% addresses.forEach(address => { %>
+                            <tr>
+                                <td><%= address.addressId %></td>
+                                <td><%= address.buildingName %></td>
+                                <td><%= address.street %></td>
+                                <td><%= address.city %></td>
+                                <td><%= address.state %></td>
+                                <td><%= address.pincode %></td>
+                                <td>
+                                    <a href="/addresses/<%= address.addressId %>/edit" class="btn btn-sm btn-warning">Edit</a>
+                                    <a href="/users/<%= user.userId %>/addresses/<%= address.addressId %>/remove" 
+                                       class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Are you sure you want to remove this address from the user?')">Remove</a>
+                                </td>
+                            </tr>
+                        <% }); %>
                     </tbody>
                 </table>
             </div>
@@ -57,25 +63,28 @@
         
         <div class="mb-4">
             <h4>Add Existing Address</h4>
-            <form th:action="@{/users/{id}/addresses/add(id=${user.userId})}" method="post" class="row g-3">
+            <form action="/users/<%= user.userId %>/addresses/add" method="post" class="row g-3">
                 <div class="col-md-8">
                     <select name="addressId" class="form-select" required>
                         <option value="">Select an address</option>
-                        <option th:each="addr : ${allAddresses}" 
-                                th:value="${addr.addressId}" 
-                                th:text="${addr.buildingName + ' ' + addr.street + ', ' + addr.city + ', ' + addr.state + ' - ' + addr.pincode}"
-                                th:unless="${addresses.contains(addr)}"></option>
+                        <% allAddresses.forEach(addr => { %>
+                            <% if (!addresses.some(a => a.addressId === addr.addressId)) { %>
+                                <option value="<%= addr.addressId %>">
+                                    <%= addr.buildingName + ' ' + addr.street + ', ' + addr.city + ', ' + addr.state + ' - ' + addr.pincode %>
+                                </option>
+                            <% } %>
+                        <% }); %>
                     </select>
                 </div>
                 <div class="col-md-4">
                     <button type="submit" class="btn btn-primary">Add Address</button>
-                    <a th:href="@{/addresses/new}" class="btn btn-success">Create New Address</a>
+                    <a href="/addresses/new" class="btn btn-success">Create New Address</a>
                 </div>
             </form>
         </div>
         
         <div class="mt-3">
-            <a th:href="@{/users}" class="btn btn-secondary">Back to Users</a>
+            <a href="/users" class="btn btn-secondary">Back to Users</a>
         </div>
     </div>
 

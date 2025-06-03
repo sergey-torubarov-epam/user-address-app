@@ -1,12 +1,22 @@
-package com.uams;
+const express = require('express');
+const bodyParser = require('body-parser');
+const dotenv = require('dotenv');
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+// Load environment variables from .env file
+dotenv.config();
 
-@SpringBootApplication
-public class UserAddressManagementSystemApplication {
+const app = express();
 
-    public static void main(String[] args) {
-        SpringApplication.run(UserAddressManagementSystemApplication.class, args);
-    }
-}
+// Middleware for JSON parsing
+app.use(bodyParser.json());
+
+// Define a simple route
+app.get('/', (req, res) => {
+    res.send('User Address Management System is up and running!');
+});
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});

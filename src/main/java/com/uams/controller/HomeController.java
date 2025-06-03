@@ -1,13 +1,16 @@
-package com.uams.controller;
+const express = require('express');
+const router = express.Router();
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+/**
+ * HomeController
+ * This controller manages the home route of the application.
+ * It currently has one method - home - which redirects the root URL to the /users URL.
+ */
 
-@Controller
-public class HomeController {
+// Home route - Redirects to /users
+router.get('/', (req, res) => {
+    // This method redirects the root URL to /users when accessed.
+    res.redirect('/users');
+});
 
-    @GetMapping("/")
-    public String home() {
-        return "redirect:/users";
-    }
-}
+module.exports = router;
