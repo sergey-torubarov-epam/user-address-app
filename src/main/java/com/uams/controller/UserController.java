@@ -3,7 +3,8 @@ const router = express.Router();
 const userService = require('../services/userService');
 const addressService = require('../services/addressService');
 
-// List all users
+// Route: GET /users
+// Purpose: List all users
 router.get('/', async (req, res, next) => {
   try {
     const users = await userService.getAllUsers();
@@ -13,12 +14,14 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-// Show form to create a new user
+// Route: GET /users/new
+// Purpose: Show form to create a new user
 router.get('/new', (req, res) => {
   res.render('user/form', { user: {} });
 });
 
-// Create new user
+// Route: POST /users
+// Purpose: Create new user
 router.post('/', async (req, res, next) => {
   const userData = req.body;
   try {
@@ -41,7 +44,8 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-// Show form to edit user
+// Route: GET /users/:id/edit
+// Purpose: Show form to edit user
 router.get('/:id/edit', async (req, res, next) => {
   const userId = req.params.id;
   try {
@@ -58,7 +62,8 @@ router.get('/:id/edit', async (req, res, next) => {
   }
 });
 
-// Update user
+// Route: POST /users/:id
+// Purpose: Update user
 router.post('/:id', async (req, res, next) => {
   const userId = req.params.id;
   const userData = req.body;
@@ -91,7 +96,8 @@ router.post('/:id', async (req, res, next) => {
   }
 });
 
-// Delete user
+// Route: GET /users/:id/delete
+// Purpose: Delete user
 router.get('/:id/delete', async (req, res, next) => {
   const userId = req.params.id;
 
@@ -104,7 +110,8 @@ router.get('/:id/delete', async (req, res, next) => {
   }
 });
 
-// View user addresses
+// Route: GET /users/:id/addresses
+// Purpose: View user addresses
 router.get('/:id/addresses', async (req, res, next) => {
   const userId = req.params.id;
 
@@ -128,7 +135,8 @@ router.get('/:id/addresses', async (req, res, next) => {
   }
 });
 
-// Add address to user
+// Route: POST /users/:userId/addresses/add
+// Purpose: Add address to user
 router.post('/:userId/addresses/add', async (req, res, next) => {
   const userId = req.params.userId;
   const { addressId } = req.body;
@@ -149,7 +157,8 @@ router.post('/:userId/addresses/add', async (req, res, next) => {
   }
 });
 
-// Remove address from user
+// Route: GET /users/:userId/addresses/:addressId/remove
+// Purpose: Remove address from user
 router.get('/:userId/addresses/:addressId/remove', async (req, res, next) => {
   const userId = req.params.userId;
   const addressId = req.params.addressId;
