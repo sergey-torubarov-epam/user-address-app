@@ -41,8 +41,8 @@ The User Address Management System is a comprehensive web application designed t
 ## Technology Stack
 
 - **Backend**: Spring Boot 2.7.0, Spring Data JPA
-- **Frontend**: Thymeleaf, Bootstrap 5
-- **Database**: MySQL
+- **Frontend**: Thymeleaf, Bootstrap 5.1.3
+- **Database**: MySQL 8.0.33
 - **Build Tool**: Maven
 - **Testing**: JUnit 5, Mockito
 - **API Documentation**: Swagger/OpenAPI
@@ -246,6 +246,61 @@ spring.datasource.password=your_password
 - `GET /orders/{id}/delete` - Delete an order
 - `GET /orders/{id}/status` - View order status
 - `POST /orders/{id}/status` - Update order status
+
+## Security Requirements
+
+- **Authentication:** User credentials validation during creation and updates.
+- **Authorization:** Secure access to user and address management functionalities.
+- **Input Validation:** Prevents SQL injection and ensures safe data handling.
+
+## Technical Requirements
+
+- **RESTful API Documentation:** Utilizes OpenAPI/Swagger for comprehensive API documentation accessible through `/api-docs` and `/swagger-ui.html` endpoints.
+- **Data Validation:** Thorough server and client-side validation to ensure data integrity.
+- **Responsive UI:** Implements Bootstrap 5.1.3 for mobile-friendly design and layout.
+- **Error Handling:** Displays error messages for user input validation and system failures.
+
+## Getting Started
+
+### Prerequisites
+
+- JDK 11 or higher
+- Maven 3.6 or higher
+- MySQL 8.0 or higher
+
+### Database Setup
+
+1. Create a MySQL database named `uams` (or update the database name in `application.properties`)
+2. The application will automatically create the required tables on startup
+
+### Configuration
+
+Update the `src/main/resources/application.properties` file with your MySQL connection details:
+
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/uams?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+```
+
+## Future Enhancements
+
+### Orders and Products Management
+- **Create Order:** Add a new order with products and link to a user.
+- **List Orders:** Display all orders for users with detailed item descriptions.
+- **Product Catalog:** Implement product listing, search, and description capabilities.
+- **Inventory Management:** Track product stock levels and automatically update on purchase.
+
+## Success Metrics and KPIs
+- **User Growth:** Measure user creation and adoption rates.
+- **Transaction Volume:** Track orders processed if e-commerce functionality is implemented.
+- **System Performance:** Monitor response times and system uptime.
+
+## Acceptance Criteria
+- Functionality should match documented business requirements.
+- UI/UX should be intuitive and responsive.
+- Data should be validated and stored correctly.
+- Error handling should be comprehensive and user-friendly.
 
 ## Testing
 
