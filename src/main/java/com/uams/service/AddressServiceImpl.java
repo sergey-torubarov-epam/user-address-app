@@ -1,4 +1,3 @@
-
 const AddressRepository = require('../repository/addressRepository');
 
 /**
@@ -18,6 +17,11 @@ class AddressService {
     /**
      * Retrieves all addresses from the data source.
      *
+     * Implementation:
+     * 1. Calls the findAll method of the addressRepository to fetch all addresses.
+     * 2. If successful, returns the array of addresses.
+     * 3. If an error occurs, throws a new Error with a descriptive message.
+     *
      * @returns {Promise<Array>} - A promise that resolves to an array of addresses.
      * @throws {Error} - Throws an error if the addresses could not be fetched.
      */
@@ -31,6 +35,12 @@ class AddressService {
 
     /**
      * Retrieves an address by its ID from the data source.
+     *
+     * Implementation:
+     * 1. Calls the findById method of the addressRepository with the provided ID.
+     * 2. If the address is found, returns it.
+     * 3. If the address is not found, throws a new Error.
+     * 4. If any other error occurs during the process, throws a new Error with a descriptive message.
      *
      * @param {number} id - The ID of the address to retrieve.
      * @returns {Promise<Object>} - A promise that resolves to the address object.
@@ -51,6 +61,11 @@ class AddressService {
     /**
      * Saves a new address to the data source.
      *
+     * Implementation:
+     * 1. Calls the save method of the addressRepository with the provided address object.
+     * 2. If successful, returns the saved address object.
+     * 3. If an error occurs during the saving process, throws a new Error with a descriptive message.
+     *
      * @param {Object} address - The address object to be saved.
      * @returns {Promise<Object>} - A promise that resolves to the saved address object.
      * @throws {Error} - Throws an error if the address could not be saved.
@@ -65,6 +80,12 @@ class AddressService {
 
     /**
      * Deletes an address by its ID from the data source.
+     *
+     * Implementation:
+     * 1. Checks if the address exists by calling findById method of the addressRepository.
+     * 2. If the address doesn't exist, throws a new Error.
+     * 3. If the address exists, calls the deleteById method of the addressRepository to delete it.
+     * 4. If any error occurs during the process, throws a new Error with a descriptive message.
      *
      * @param {number} id - The ID of the address to delete.
      * @returns {Promise<void>} - A promise that resolves when the address has been deleted.
