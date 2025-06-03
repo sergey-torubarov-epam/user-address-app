@@ -2,7 +2,8 @@ const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 
 /**
- * User model representing user data.
+ * User model representing user data in the system.
+ * This class extends Sequelize's Model class to define the schema and behavior of the User entity.
  */
 class User extends Model {}
 
@@ -10,7 +11,8 @@ User.init(
   {
     /**
      * Unique identifier for each user.
-     * Automatically increments with each new user.
+     * Automatically increments with each new user creation.
+     * Serves as the primary key in the database.
      */
     userId: {
       type: DataTypes.BIGINT,
@@ -20,7 +22,8 @@ User.init(
     },
     /**
      * Email address of the user.
-     * Must be unique and a valid email format.
+     * Must be unique across all users and conform to a valid email format.
+     * Used for user identification and communication.
      */
     email: {
       type: DataTypes.STRING,
@@ -33,7 +36,8 @@ User.init(
     },
     /**
      * First name of the user.
-     * Cannot be null.
+     * Required field that cannot be null.
+     * Represents the user's given name.
      */
     firstName: {
       type: DataTypes.STRING,
@@ -45,7 +49,8 @@ User.init(
     },
     /**
      * Last name of the user.
-     * Cannot be null.
+     * Required field that cannot be null.
+     * Represents the user's family name or surname.
      */
     lastName: {
       type: DataTypes.STRING,
@@ -57,7 +62,8 @@ User.init(
     },
     /**
      * Mobile number of the user.
-     * Can be null.
+     * Optional field that can be null.
+     * Stores the user's contact phone number.
      */
     mobileNumber: {
       type: DataTypes.STRING,
@@ -65,7 +71,9 @@ User.init(
     },
     /**
      * Password for user authentication.
-     * Cannot be null and must be at least 6 characters long.
+     * Required field that cannot be null.
+     * Must be at least 6 characters long for security purposes.
+     * Note: In production, passwords should be hashed before storage.
      */
     password: {
       type: DataTypes.STRING,
@@ -83,21 +91,27 @@ User.init(
     sequelize,
     modelName: 'User',
     tableName: 'users',
-    timestamps: false,
+    timestamps: false, // Disables automatic timestamp fields (createdAt, updatedAt)
   }
 );
 
-const Address = require('./address'); // Assuming Address model is defined similarly
+const Address = require('./address'); // Importing the Address model
 
 /**
  * Establishes a many-to-many relationship between User and Address.
- * Creates a junction table named 'user_address' with foreign keys: 'user_id' and 'address_id'.
+ * This relationship is implemented using a junction table named 'user_address'.
+ * It allows each user to have multiple addresses and each address to be associated with multiple users.
  */
 User.belongsToMany(Address, {
-  through: 'user_address',
-  foreignKey: 'user_id',
-  otherKey: 'address_id',
+  through: 'user_address', // Name of the junction table
+  foreignKey: 'user_id', // Foreign key in the junction table referencing User
+  otherKey: 'address_id', // Foreign key in the junction table referencing Address
 });
+
+/**
+ * Reciprocal relationship definition for the many-to-many association.
+ * This allows querying the relationship from the Address side as well.
+ */
 Address.belongsToMany(User, {
   through: 'user_address',
   foreignKey: 'address_id',
