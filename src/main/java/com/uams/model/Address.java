@@ -3,6 +3,7 @@ const sequelize = require('../config/database');
 
 /**
  * Represents an address of a user or a place.
+ * This model is used to store and manage address information in the database.
  */
 class Address extends Model {}
 
@@ -16,12 +17,15 @@ class Address extends Model {}
  * - pincode: String for the postal code which is required and must not be empty.
  * 
  * No Lombok annotations are available or used in JavaScript/Node.js context.
+ * 
+ * This model definition uses Sequelize ORM to map the Address entity to the 'addresses' table in the database.
  */
 
 Address.init(
   {
     /**
      * Primary key, auto-incremented Unique identifier for the address.
+     * This field serves as the main identifier for each address record.
      */
     addressId: {
       type: DataTypes.BIGINT,
@@ -30,6 +34,7 @@ Address.init(
     },
     /**
      * Nullable string for the building name or number.
+     * This field is optional and can be left empty if not applicable.
      */
     buildingName: {
       type: DataTypes.STRING,
@@ -37,6 +42,7 @@ Address.init(
     },
     /**
      * String for the street name which is required and must not be empty.
+     * This field is mandatory and represents the street part of the address.
      */
     street: {
       type: DataTypes.STRING,
@@ -49,6 +55,7 @@ Address.init(
     },
     /**
      * String for the city name which is required and must not be empty.
+     * This field is mandatory and represents the city part of the address.
      */
     city: {
       type: DataTypes.STRING,
@@ -61,6 +68,7 @@ Address.init(
     },
     /**
      * String for the state name which is required and must not be empty.
+     * This field is mandatory and represents the state or province part of the address.
      */
     state: {
       type: DataTypes.STRING,
@@ -73,6 +81,7 @@ Address.init(
     },
     /**
      * String for the postal code which is required and must not be empty.
+     * This field is mandatory and represents the postal or ZIP code of the address.
      */
     pincode: {
       type: DataTypes.STRING,
@@ -88,8 +97,9 @@ Address.init(
     sequelize,
     modelName: 'Address',
     tableName: 'addresses',
-    timestamps: false,
+    timestamps: false, // Indicates that this model doesn't use createdAt and updatedAt fields
   }
 );
 
+// Export the Address model to be used in other parts of the application
 module.exports = Address;
