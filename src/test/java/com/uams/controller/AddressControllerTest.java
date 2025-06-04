@@ -47,6 +47,7 @@ public class AddressControllerTest {
 
     private MockMvc mockMvc;
     private Address address;
+    private Address address2;
 
     @BeforeEach
     void setUp() {
@@ -59,7 +60,18 @@ public class AddressControllerTest {
         address.setCity("New York");
         address.setState("NY");
         address.setPincode("10001");
+        address.setCountry("USA");
         address.setUsers(new HashSet<>());
+        
+        address2 = new Address();
+        address2.setAddressId(2L);
+        address2.setBuildingName("Building B");
+        address2.setStreet("456 Oak St");
+        address2.setCity("Toronto");
+        address2.setState("ON");
+        address2.setPincode("M5V 2H1");
+        address2.setCountry("Canada");
+        address2.setUsers(new HashSet<>());
     }
 
     @Test
