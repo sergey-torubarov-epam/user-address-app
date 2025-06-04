@@ -1,149 +1,208 @@
-const request = require('supertest');
-const chai = require('chai');
-const sinon = require('sinon');
-const expect = chai.expect;
-const app = require('../../app'); // Assuming app.js initializes your Express app
-const userService = require('../../services/userService');
-const addressService = require('../../services/addressService');
+package com.uams.controller;
 
-describe('UserController', () => {
-    let sandbox;
-    let user;
-    let address;
+import com.uams.model.Address;
+import com.uams.model.User;
+import com.uams.service.AddressService;
+import com.uams.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-    beforeEach(() => {
-        sandbox = sinon.createSandbox();
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Optional;
 
-        // Initializing a mock user object
-        user = {
-            userId: 1,
-            email: 'john@example.com',
-            firstName: 'John',
-            lastName: 'Doe',
-            mobileNumber: '1234567890',
-            password: 'password',
-            addresses: new Set(),
-        };
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-        // Initializing a mock address object
-        address = {
-            addressId: 1,
-            buildingName: 'Building A',
-            street: '123 Main St',
-            city: 'New York',
-            state: 'NY',
-            pincode: '10001',
-            users: new Set(),
-        };
-    });
+@ExtendWith(MockitoExtension.class)
+public class UserControllerTest {
 
-    afterEach(() => {
-        sandbox.restore();
-    });
+    @Mock
+    private UserService userService;
 
-    // Test to check the user list endpoint
-    it('GET /users - should return user list view', async () => {
-        sandbox.stub(userService, 'getAllUsers').returns([user]);
+    @Mock
+    private AddressService addressService;
 
-        const res = await request(app).get('/users');
+    @Mock
+    private Model model;
 
-        expect(res.status).to.equal(200);
-        expect(res.text).to.include('user/list'); // Assuming the view renders this
-        sandbox.assert.calledOnce(userService.getAllUsers);
-    });
+    @Mock
+    private BindingResult bindingResult;
 
-    // Test to check the user creation form endpoint
-    it('GET /users/new - should return user creation form', async () => {
-        const res = await request(app).get('/users/new');
+    @Mock
+    private RedirectAttributes redirectAttributes;
 
-        expect(res.status).to.equal(200);
-        expect(res.text).to.include('user/form'); // Assuming the view renders this
-    });
+    @InjectMocks
+    private UserController userController;
 
-    // Test to check creating a new user
-    it('POST /users - should create a new user and redirect', async () => {
-        sandbox.stub(userService, 'existsByEmail').returns(false);
-        sandbox.stub(userService, 'saveUser').returns(user);
+    private MockMvc mockMvc;
+    private User user;
+    private Address address;
 
-        const res = await request(app)
-            .post('/users')
-            .send(user);
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
 
-        expect(res.status).to.equal(302);
-        expect(res.header.location).to.equal('/users');
-        sandbox.assert.calledOnce(userService.existsByEmail);
-        sandbox.assert.calledOnce(userService.saveUser);
-    });
+        user = new User();
+        user.setUserId(1L);
+        user.setEmail("john@example.com");
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setMobileNumber("1234567890");
+        user.setPassword("password");
+        user.setAddresses(new HashSet<>());
 
-    // Test to check rejecting user creation if email already exists
-    it('POST /users - should reject creation for existing email', async () => {
-        sandbox.stub(userService, 'existsByEmail').returns(true);
+        address = new Address();
+        address.setAddressId(1L);
+        address.setBuildingName("Building A");
+        address.setStreet("123 Main St");
+        address.setCity("New York");
+        address.setState("NY");
+        address.setPincode("10001");
+        address.setUsers(new HashSet<>());
+    }
 
-        const res = await request(app)
-            .post('/users')
-            .send(user);
+    @Test
+    void listUsers_ShouldAddUsersToModelAndReturnListView() throws Exception {
+        // Arrange
+        when(userService.getAllUsers()).thenReturn(Arrays.asList(user));
 
-        expect(res.status).to.equal(200); // Assuming the form view is returned with validation errors
-        expect(res.text).to.include('user/form'); // Assuming the view renders this
-        sandbox.assert.calledOnce(userService.existsByEmail);
-        sandbox.assert.notCalled(userService.saveUser);
-    });
+        // Act & Assert
+        mockMvc.perform(get("/users"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("users"))
+                .andExpect(view().name("user/list"));
 
-    // Test to check user edit form endpoint for existing user
-    it('GET /users/:id/edit - should return edit form for existing user', async () => {
-        sandbox.stub(userService, 'getUserById').returns(Promise.resolve(user));
+        verify(userService, times(1)).getAllUsers();
+    }
 
-        const res = await request(app).get('/users/1/edit');
+    @Test
+    void showCreateForm_ShouldAddNewUserToModelAndReturnFormView() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get("/users/new"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("user"))
+                .andExpect(view().name("user/form"));
+    }
 
-        expect(res.status).to.equal(200);
-        expect(res.text).to.include('user/form'); // Assuming the view renders this
-        sandbox.assert.calledOnce(userService.getUserById);
-    });
+    @Test
+    void createUser_WithValidData_ShouldSaveUserAndRedirect() {
+        // Arrange
+        when(userService.existsByEmail(anyString())).thenReturn(false);
+        when(bindingResult.hasErrors()).thenReturn(false);
+        when(userService.saveUser(any(User.class))).thenReturn(user);
 
-    // Test to check redirection if user does not exist for edit
-    it('GET /users/:id/edit - should redirect if user does not exist', async () => {
-        sandbox.stub(userService, 'getUserById').returns(Promise.resolve(null));
+        // Act
+        String viewName = userController.createUser(user, bindingResult, redirectAttributes);
 
-        const res = await request(app).get('/users/99/edit');
+        // Assert
+        assertEquals("redirect:/users", viewName);
+        verify(userService, times(1)).existsByEmail(user.getEmail());
+        verify(userService, times(1)).saveUser(user);
+        verify(redirectAttributes, times(1)).addFlashAttribute(eq("successMessage"), anyString());
+    }
 
-        expect(res.status).to.equal(302);
-        expect(res.header.location).to.equal('/users');
-        sandbox.assert.calledOnce(userService.getUserById);
-    });
+    @Test
+    void createUser_WithExistingEmail_ShouldReturnFormWithError() {
+        // Arrange
+        when(userService.existsByEmail(anyString())).thenReturn(true);
+        when(bindingResult.hasErrors()).thenReturn(true);
 
-    // Test to check deleting a user
-    it('GET /users/:id/delete - should delete user and redirect', async () => {
-        sandbox.stub(userService, 'deleteUser').returns(Promise.resolve());
+        // Act
+        String viewName = userController.createUser(user, bindingResult, redirectAttributes);
 
-        const res = await request(app).get('/users/1/delete');
+        // Assert
+        assertEquals("user/form", viewName);
+        verify(userService, times(1)).existsByEmail(user.getEmail());
+        verify(bindingResult, times(1)).rejectValue(eq("email"), anyString(), anyString());
+        verify(userService, never()).saveUser(any(User.class));
+    }
 
-        expect(res.status).to.equal(302);
-        expect(res.header.location).to.equal('/users');
-        sandbox.assert.calledOnce(userService.deleteUser);
-    });
+    @Test
+    void showEditForm_WithExistingId_ShouldAddUserToModelAndReturnFormView() throws Exception {
+        // Arrange
+        when(userService.getUserById(1L)).thenReturn(Optional.of(user));
 
-    // Test to check user addresses view endpoint for existing users
-    it('GET /users/:id/addresses - should return user addresses view', async () => {
-        sandbox.stub(userService, 'getUserById').returns(Promise.resolve(user));
-        sandbox.stub(addressService, 'getAllAddresses').returns([address]);
+        // Act & Assert
+        mockMvc.perform(get("/users/1/edit"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("user"))
+                .andExpect(view().name("user/form"));
 
-        const res = await request(app).get('/users/1/addresses');
+        verify(userService, times(1)).getUserById(1L);
+    }
 
-        expect(res.status).to.equal(200);
-        expect(res.text).to.include('user/addresses'); // Assuming the view renders this
-        sandbox.assert.calledOnce(userService.getUserById);
-        sandbox.assert.calledOnce(addressService.getAllAddresses);
-    });
+    @Test
+    void showEditForm_WithNonExistingId_ShouldRedirectToUsersList() throws Exception {
+        // Arrange
+        when(userService.getUserById(99L)).thenReturn(Optional.empty());
 
-    // Test to check redirection if user does not exist for addresses view
-    it('GET /users/:id/addresses - should redirect if user does not exist', async () => {
-        sandbox.stub(userService, 'getUserById').returns(Promise.resolve(null));
+        // Act & Assert
+        mockMvc.perform(get("/users/99/edit"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users"));
 
-        const res = await request(app).get('/users/99/addresses');
+        verify(userService, times(1)).getUserById(99L);
+    }
 
-        expect(res.status).to.equal(302);
-        expect(res.header.location).to.equal('/users');
-        sandbox.assert.calledOnce(userService.getUserById);
-        sandbox.assert.notCalled(addressService.getAllAddresses);
-    });
-});
+    @Test
+    void deleteUser_ShouldDeleteUserAndRedirect() throws Exception {
+        // Arrange
+        doNothing().when(userService).deleteUser(1L);
+
+        // Act & Assert
+        mockMvc.perform(get("/users/1/delete"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users"));
+
+        verify(userService, times(1)).deleteUser(1L);
+    }
+
+    @Test
+    void viewUserAddresses_WithExistingId_ShouldAddUserAndAddressesToModelAndReturnAddressesView() throws Exception {
+        // Arrange
+        when(userService.getUserById(1L)).thenReturn(Optional.of(user));
+        when(addressService.getAllAddresses()).thenReturn(Arrays.asList(address));
+
+        // Act & Assert
+        mockMvc.perform(get("/users/1/addresses"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("user"))
+                .andExpect(model().attributeExists("addresses"))
+                .andExpect(model().attributeExists("allAddresses"))
+                .andExpect(model().attributeExists("newAddress"))
+                .andExpect(view().name("user/addresses"));
+
+        verify(userService, times(1)).getUserById(1L);
+        verify(addressService, times(1)).getAllAddresses();
+    }
+
+    @Test
+    void viewUserAddresses_WithNonExistingId_ShouldRedirectToUsersList() throws Exception {
+        // Arrange
+        when(userService.getUserById(99L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        mockMvc.perform(get("/users/99/addresses"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users"));
+
+        verify(userService, times(1)).getUserById(99L);
+        verify(addressService, never()).getAllAddresses();
+    }
+}

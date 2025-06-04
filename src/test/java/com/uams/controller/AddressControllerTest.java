@@ -1,143 +1,196 @@
-const request = require('supertest');
-const { expect } = require('chai');
-const sinon = require('sinon');
-const app = require('../../app'); // Assuming the Express app is exported from app.js
-const AddressService = require('../../services/addressService');
+package com.uams.controller;
 
-describe('AddressController', () => {
-    let addressServiceStub;
+import com.uams.model.Address;
+import com.uams.service.AddressService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-    const mockAddress = {
-        addressId: 1,
-        buildingName: 'Building A',
-        street: '123 Main St',
-        city: 'New York',
-        state: 'NY',
-        pincode: '10001',
-        users: [],
-    };
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Optional;
 
-    beforeEach(() => {
-        addressServiceStub = sinon.stub(AddressService);
-    });
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-    afterEach(() => {
-        sinon.restore();
-    });
+@ExtendWith(MockitoExtension.class)
+public class AddressControllerTest {
 
-    describe('GET /addresses', () => {
-        // Test the GET /addresses route for retrieving a list of addresses
-        it('should return a list of addresses and render the list view', async () => {
-            addressServiceStub.getAllAddresses.resolves([mockAddress]);
+    @Mock
+    private AddressService addressService;
 
-            const res = await request(app).get('/addresses');
+    @Mock
+    private Model model;
 
-            expect(res.status).to.equal(200);
-            expect(res.text).to.include('addresses'); // Assuming the view renders "addresses"
-            sinon.assert.calledOnce(addressServiceStub.getAllAddresses);
-        });
-    });
+    @Mock
+    private BindingResult bindingResult;
 
-    describe('GET /addresses/new', () => {
-        // Test the GET /addresses/new route for rendering the address creation form
-        it('should render the create form view', async () => {
-            const res = await request(app).get('/addresses/new');
+    @Mock
+    private RedirectAttributes redirectAttributes;
 
-            expect(res.status).to.equal(200);
-            expect(res.text).to.include('address'); // Assuming the view renders "address"
-        });
-    });
+    @InjectMocks
+    private AddressController addressController;
 
-    describe('POST /addresses', () => {
-        // Test the POST /addresses route for saving a valid address and redirecting
-        it('should save a valid address and redirect', async () => {
-            addressServiceStub.saveAddress.resolves(mockAddress);
+    private MockMvc mockMvc;
+    private Address address;
+    private Address address2;
 
-            const res = await request(app)
-                .post('/addresses')
-                .send(mockAddress);
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(addressController).build();
 
-            expect(res.status).to.equal(302);
-            expect(res.header.location).to.equal('/addresses');
-            sinon.assert.calledOnce(addressServiceStub.saveAddress);
-        });
+        address = new Address();
+        address.setAddressId(1L);
+        address.setBuildingName("Building A");
+        address.setStreet("123 Main St");
+        address.setCity("New York");
+        address.setState("NY");
+        address.setPincode("10001");
+        address.setCountry("USA");
+        address.setUsers(new HashSet<>());
+        
+        address2 = new Address();
+        address2.setAddressId(2L);
+        address2.setBuildingName("Building B");
+        address2.setStreet("456 Oak St");
+        address2.setCity("Toronto");
+        address2.setState("ON");
+        address2.setPincode("M5V 2H1");
+        address2.setCountry("Canada");
+        address2.setUsers(new HashSet<>());
+    }
 
-        // Test the POST /addresses route to return form with errors for invalid data
-        it('should return form with errors for invalid data', async () => {
-            const invalidAddress = { ...mockAddress, buildingName: '' }; // Simulate invalid data
+    @Test
+    void listAddresses_ShouldAddAddressesToModelAndReturnListView() throws Exception {
+        // Arrange
+        when(addressService.getAllAddresses()).thenReturn(Arrays.asList(address));
 
-            const res = await request(app)
-                .post('/addresses')
-                .send(invalidAddress);
+        // Act & Assert
+        mockMvc.perform(get("/addresses"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("addresses"))
+                .andExpect(view().name("address/list"));
 
-            expect(res.status).to.equal(400); // Assuming validation error returns 400
-            expect(res.text).to.include('address/form'); // Assuming the view renders "address/form"
-            sinon.assert.notCalled(addressServiceStub.saveAddress);
-        });
-    });
+        verify(addressService, times(1)).getAllAddresses();
+    }
 
-    describe('GET /addresses/:id/edit', () => {
-        // Test the GET /addresses/:id/edit route for rendering the edit form for an existing address
-        it('should render edit form for an existing address', async () => {
-            addressServiceStub.getAddressById.resolves(mockAddress);
+    @Test
+    void showCreateForm_ShouldAddNewAddressToModelAndReturnFormView() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get("/addresses/new"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("address"))
+                .andExpect(view().name("address/form"));
+    }
 
-            const res = await request(app).get('/addresses/1/edit');
+    @Test
+    void createAddress_WithValidData_ShouldSaveAddressAndRedirect() {
+        // Arrange
+        when(bindingResult.hasErrors()).thenReturn(false);
+        when(addressService.saveAddress(any(Address.class))).thenReturn(address);
 
-            expect(res.status).to.equal(200);
-            expect(res.text).to.include('address'); // Assuming the view renders "address"
-            sinon.assert.calledOnce(addressServiceStub.getAddressById);
-        });
+        // Act
+        String viewName = addressController.createAddress(address, bindingResult, redirectAttributes);
 
-        // Test the GET /addresses/:id/edit route to redirect to the list view for a non-existing address
-        it('should redirect to addresses list for a non-existing address', async () => {
-            addressServiceStub.getAddressById.resolves(null);
+        // Assert
+        assertEquals("redirect:/addresses", viewName);
+        verify(addressService, times(1)).saveAddress(address);
+        verify(redirectAttributes, times(1)).addFlashAttribute(eq("successMessage"), anyString());
+    }
 
-            const res = await request(app).get('/addresses/99/edit');
+    @Test
+    void createAddress_WithInvalidData_ShouldReturnFormWithErrors() {
+        // Arrange
+        when(bindingResult.hasErrors()).thenReturn(true);
 
-            expect(res.status).to.equal(302);
-            expect(res.header.location).to.equal('/addresses');
-            sinon.assert.calledOnce(addressServiceStub.getAddressById);
-        });
-    });
+        // Act
+        String viewName = addressController.createAddress(address, bindingResult, redirectAttributes);
 
-    describe('POST /addresses/:id', () => {
-        // Test the POST /addresses/:id route for updating a valid address and redirecting
-        it('should update a valid address and redirect', async () => {
-            addressServiceStub.saveAddress.resolves(mockAddress);
+        // Assert
+        assertEquals("address/form", viewName);
+        verify(addressService, never()).saveAddress(any(Address.class));
+    }
 
-            const res = await request(app)
-                .post('/addresses/1')
-                .send(mockAddress);
+    @Test
+    void showEditForm_WithExistingId_ShouldAddAddressToModelAndReturnFormView() throws Exception {
+        // Arrange
+        when(addressService.getAddressById(1L)).thenReturn(Optional.of(address));
 
-            expect(res.status).to.equal(302);
-            expect(res.header.location).to.equal('/addresses');
-            sinon.assert.calledOnce(addressServiceStub.saveAddress);
-        });
+        // Act & Assert
+        mockMvc.perform(get("/addresses/1/edit"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("address"))
+                .andExpect(view().name("address/form"));
 
-        // Test the POST /addresses/:id route to return form with errors for invalid data
-        it('should return form with errors for invalid data', async () => {
-            const invalidAddress = { ...mockAddress, city: '' }; // Simulate invalid data
+        verify(addressService, times(1)).getAddressById(1L);
+    }
 
-            const res = await request(app)
-                .post('/addresses/1')
-                .send(invalidAddress);
+    @Test
+    void showEditForm_WithNonExistingId_ShouldRedirectToAddressesList() throws Exception {
+        // Arrange
+        when(addressService.getAddressById(99L)).thenReturn(Optional.empty());
 
-            expect(res.status).to.equal(400); // Assuming validation error returns 400
-            expect(res.text).to.include('address/form'); // Assuming the view renders "address/form"
-            sinon.assert.notCalled(addressServiceStub.saveAddress);
-        });
-    });
+        // Act & Assert
+        mockMvc.perform(get("/addresses/99/edit"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/addresses"));
 
-    describe('GET /addresses/:id/delete', () => {
-        // Test the GET /addresses/:id/delete route for deleting an address and redirecting
-        it('should delete the address and redirect', async () => {
-            addressServiceStub.deleteAddress.resolves();
+        verify(addressService, times(1)).getAddressById(99L);
+    }
 
-            const res = await request(app).get('/addresses/1/delete');
+    @Test
+    void updateAddress_WithValidData_ShouldUpdateAddressAndRedirect() {
+        // Arrange
+        when(bindingResult.hasErrors()).thenReturn(false);
+        when(addressService.saveAddress(any(Address.class))).thenReturn(address);
 
-            expect(res.status).to.equal(302);
-            expect(res.header.location).to.equal('/addresses');
-            sinon.assert.calledOnce(addressServiceStub.deleteAddress);
-        });
-    });
-});
+        // Act
+        String viewName = addressController.updateAddress(1L, address, bindingResult, redirectAttributes);
+
+        // Assert
+        assertEquals("redirect:/addresses", viewName);
+        assertEquals(1L, address.getAddressId());
+        verify(addressService, times(1)).saveAddress(address);
+        verify(redirectAttributes, times(1)).addFlashAttribute(eq("successMessage"), anyString());
+    }
+
+    @Test
+    void updateAddress_WithInvalidData_ShouldReturnFormWithErrors() {
+        // Arrange
+        when(bindingResult.hasErrors()).thenReturn(true);
+
+        // Act
+        String viewName = addressController.updateAddress(1L, address, bindingResult, redirectAttributes);
+
+        // Assert
+        assertEquals("address/form", viewName);
+        verify(addressService, never()).saveAddress(any(Address.class));
+    }
+
+    @Test
+    void deleteAddress_ShouldDeleteAddressAndRedirect() throws Exception {
+        // Arrange
+        doNothing().when(addressService).deleteAddress(1L);
+
+        // Act & Assert
+        mockMvc.perform(get("/addresses/1/delete"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/addresses"));
+
+        verify(addressService, times(1)).deleteAddress(1L);
+    }
+}
