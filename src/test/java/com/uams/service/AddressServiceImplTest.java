@@ -38,6 +38,7 @@ public class AddressServiceImplTest {
         address1.setCity("New York");
         address1.setState("NY");
         address1.setPincode("10001");
+        address1.setCountry("USA");
 
         address2 = new Address();
         address2.setAddressId(2L);
@@ -46,6 +47,7 @@ public class AddressServiceImplTest {
         address2.setCity("Los Angeles");
         address2.setState("CA");
         address2.setPincode("90001");
+        address2.setCountry("Canada");
     }
 
     @Test
