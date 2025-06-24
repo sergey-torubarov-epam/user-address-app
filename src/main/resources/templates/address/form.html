@@ -34,12 +34,6 @@
             </div>
             
             <div class="mb-3">
-                <label for="country" class="form-label">Country</label>
-                <input type="text" class="form-control" id="country" th:field="*{country}" required>
-                <div class="text-danger" th:if="${#fields.hasErrors('country')}" th:errors="*{country}"></div>
-            </div>
-            
-            <div class="mb-3">
                 <label for="pincode" class="form-label">Pincode</label>
                 <input type="text" class="form-control" id="pincode" th:field="*{pincode}" required>
                 <div class="text-danger" th:if="${#fields.hasErrors('pincode')}" th:errors="*{pincode}"></div>

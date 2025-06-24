@@ -42,10 +42,6 @@ public class Address {
     @Column(name = "state", nullable = false)
     private String state;
 
-    @NotBlank(message = "Country is required")
-    @Column(name = "country", nullable = false)
-    private String country;
-
     @NotBlank(message = "Pincode is required")
     @Column(name = "pincode", nullable = false)
     private String pincode;
@@ -62,7 +58,6 @@ public class Address {
                 ", street='" + street + '\'' +
                 ", city='" + city + '\'' +
                 ", state='" + state + '\'' +
-                ", country='" + country + '\'' +
                 ", pincode='" + pincode + '\'' +
                 '}';
     }

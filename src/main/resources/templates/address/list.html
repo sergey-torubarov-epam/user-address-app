@@ -26,14 +26,13 @@
                         <th>Street</th>
                         <th>City</th>
                         <th>State</th>
-                        <th>Country</th>
                         <th>Pincode</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr th:if="${addresses.empty}">
-                        <td colspan="8" class="text-center">No addresses found</td>
+                        <td colspan="7" class="text-center">No addresses found</td>
                     </tr>
                     <tr th:each="address : ${addresses}">
                         <td th:text="${address.addressId}"></td>
@@ -41,7 +40,6 @@
                         <td th:text="${address.street}"></td>
                         <td th:text="${address.city}"></td>
                         <td th:text="${address.state}"></td>
-                        <td th:text="${address.country}"></td>
                         <td th:text="${address.pincode}"></td>
                         <td>
                             <a th:href="@{/addresses/{id}/edit(id=${address.addressId})}" class="btn">Edit</a>
