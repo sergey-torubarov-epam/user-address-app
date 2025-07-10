@@ -59,6 +59,7 @@ public class AddressControllerTest {
         address.setCity("New York");
         address.setState("NY");
         address.setPincode("10001");
+        address.setCountry("USA");
         address.setUsers(new HashSet<>());
     }
 
@@ -114,6 +115,37 @@ public class AddressControllerTest {
     }
 
     @Test
+    void createAddress_WithValidCountry_ShouldSaveAddressAndRedirect() {
+        // Arrange
+        address.setCountry("Canada");
+        when(bindingResult.hasErrors()).thenReturn(false);
+        when(addressService.saveAddress(any(Address.class))).thenReturn(address);
+
+        // Act
+        String viewName = addressController.createAddress(address, bindingResult, redirectAttributes);
+
+        // Assert
+        assertEquals("redirect:/addresses", viewName);
+        assertEquals("Canada", address.getCountry());
+        verify(addressService, times(1)).saveAddress(address);
+        verify(redirectAttributes, times(1)).addFlashAttribute(eq("successMessage"), anyString());
+    }
+
+    @Test
+    void createAddress_WithEmptyCountry_ShouldReturnFormWithErrors() {
+        // Arrange
+        address.setCountry("");
+        when(bindingResult.hasErrors()).thenReturn(true);
+
+        // Act
+        String viewName = addressController.createAddress(address, bindingResult, redirectAttributes);
+
+        // Assert
+        assertEquals("address/form", viewName);
+        verify(addressService, never()).saveAddress(any(Address.class));
+    }
+
+    @Test
     void showEditForm_WithExistingId_ShouldAddAddressToModelAndReturnFormView() throws Exception {
         // Arrange
         when(addressService.getAddressById(1L)).thenReturn(Optional.of(address));
@@ -154,6 +186,37 @@ public class AddressControllerTest {
         assertEquals(1L, address.getAddressId());
         verify(addressService, times(1)).saveAddress(address);
         verify(redirectAttributes, times(1)).addFlashAttribute(eq("successMessage"), anyString());
+    }
+
+    @Test
+    void updateAddress_WithValidCountry_ShouldUpdateAddressAndRedirect() {
+        // Arrange
+        address.setCountry("UK");
+        when(bindingResult.hasErrors()).thenReturn(false);
+        when(addressService.saveAddress(any(Address.class))).thenReturn(address);
+
+        // Act
+        String viewName = addressController.updateAddress(1L, address, bindingResult, redirectAttributes);
+
+        // Assert
+        assertEquals("redirect:/addresses", viewName);
+        assertEquals("UK", address.getCountry());
+        verify(addressService, times(1)).saveAddress(address);
+        verify(redirectAttributes, times(1)).addFlashAttribute(eq("successMessage"), anyString());
+    }
+
+    @Test
+    void updateAddress_WithEmptyCountry_ShouldReturnFormWithErrors() {
+        // Arrange
+        address.setCountry("");
+        when(bindingResult.hasErrors()).thenReturn(true);
+
+        // Act
+        String viewName = addressController.updateAddress(1L, address, bindingResult, redirectAttributes);
+
+        // Assert
+        assertEquals("address/form", viewName);
+        verify(addressService, never()).saveAddress(any(Address.class));
     }
 
     @Test
