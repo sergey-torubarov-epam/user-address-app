@@ -37,24 +37,28 @@ public class AddressController {
     public String listAddresses(Model model) {
         List<Address> addresses = addressService.getAllAddresses();
         model.addAttribute("addresses", addresses);
+        model.addAttribute("countries", getCountriesList());
         return "address/list";
     }
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
         model.addAttribute("address", new Address());
+        model.addAttribute("countries", getCountriesList());
         return "address/form";
     }
 
     @Operation(
         summary = "Create new address",
-        description = "Creates a new address with the provided details"
+        description = "Creates a new address with the provided details including country"
     )
     @PostMapping
     public String createAddress(@Valid @ModelAttribute("address") Address address, 
                               BindingResult result, 
-                              RedirectAttributes redirectAttributes) {
+                              RedirectAttributes redirectAttributes,
+                              Model model) {
         if (result.hasErrors()) {
+            model.addAttribute("countries", getCountriesList());
             return "address/form";
         }
         
@@ -68,6 +72,7 @@ public class AddressController {
         Optional<Address> addressOpt = addressService.getAddressById(id);
         if (addressOpt.isPresent()) {
             model.addAttribute("address", addressOpt.get());
+            model.addAttribute("countries", getCountriesList());
             return "address/form";
         }
         return "redirect:/addresses";
@@ -75,14 +80,16 @@ public class AddressController {
 
     @Operation(
         summary = "Update address",
-        description = "Updates an existing address's information"
+        description = "Updates an existing address's information including country"
     )
     @PostMapping("/{id}")
     public String updateAddress(@Parameter(description = "ID of the address to update") @PathVariable Long id, 
                               @Valid @ModelAttribute("address") Address address, 
                               BindingResult result, 
-                              RedirectAttributes redirectAttributes) {
+                              RedirectAttributes redirectAttributes,
+                              Model model) {
         if (result.hasErrors()) {
+            model.addAttribute("countries", getCountriesList());
             return "address/form";
         }
         
@@ -101,5 +108,10 @@ public class AddressController {
         addressService.deleteAddress(id);
         redirectAttributes.addFlashAttribute("successMessage", "Address deleted successfully!");
         return "redirect:/addresses";
+    }
+
+    @ModelAttribute("countries")
+    private List<String> getCountriesList() {
+        return addressService.getAvailableCountries();
     }
 }
