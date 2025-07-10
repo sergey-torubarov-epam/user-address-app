@@ -39,6 +39,12 @@
                 <div class="text-danger" th:if="${#fields.hasErrors('pincode')}" th:errors="*{pincode}"></div>
             </div>
             
+            <div class="mb-3">
+                <label for="country" class="form-label">Country</label>
+                <input type="text" class="form-control" id="country" th:field="*{country}">
+                <div class="text-danger" th:if="${#fields.hasErrors('country')}" th:errors="*{country}"></div>
+            </div>
+            
             <button type="submit" class="btn">Save</button>
             <a th:href="@{/addresses}" class="btn">Cancel</a>
         </form>
