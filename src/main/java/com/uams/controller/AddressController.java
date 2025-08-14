@@ -2,6 +2,7 @@ package com.uams.controller;
 
 import com.uams.model.Address;
 import com.uams.service.AddressService;
+import com.uams.service.CountryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,10 +24,12 @@ import java.util.Optional;
 public class AddressController {
 
     private final AddressService addressService;
+    private final CountryService countryService;
 
     @Autowired
-    public AddressController(AddressService addressService) {
+    public AddressController(AddressService addressService, CountryService countryService) {
         this.addressService = addressService;
+        this.countryService = countryService;
     }
 
     @Operation(
@@ -43,6 +46,7 @@ public class AddressController {
     @GetMapping("/new")
     public String showCreateForm(Model model) {
         model.addAttribute("address", new Address());
+        model.addAttribute("countries", countryService.getAllCountries());
         return "address/form";
     }
 
@@ -53,8 +57,10 @@ public class AddressController {
     @PostMapping
     public String createAddress(@Valid @ModelAttribute("address") Address address, 
                               BindingResult result, 
-                              RedirectAttributes redirectAttributes) {
+                              RedirectAttributes redirectAttributes,
+                              Model model) {
         if (result.hasErrors()) {
+            model.addAttribute("countries", countryService.getAllCountries());
             return "address/form";
         }
         
@@ -68,6 +74,7 @@ public class AddressController {
         Optional<Address> addressOpt = addressService.getAddressById(id);
         if (addressOpt.isPresent()) {
             model.addAttribute("address", addressOpt.get());
+            model.addAttribute("countries", countryService.getAllCountries());
             return "address/form";
         }
         return "redirect:/addresses";
@@ -81,8 +88,10 @@ public class AddressController {
     public String updateAddress(@Parameter(description = "ID of the address to update") @PathVariable Long id, 
                               @Valid @ModelAttribute("address") Address address, 
                               BindingResult result, 
-                              RedirectAttributes redirectAttributes) {
+                              RedirectAttributes redirectAttributes,
+                              Model model) {
         if (result.hasErrors()) {
+            model.addAttribute("countries", countryService.getAllCountries());
             return "address/form";
         }
         
