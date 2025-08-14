@@ -46,6 +46,9 @@ public class Address {
     @Column(name = "pincode", nullable = false)
     private String pincode;
 
+    @Column(name = "country", length = 100)
+    private String country;
+
     @ManyToMany(mappedBy = "addresses", fetch = FetchType.LAZY)
     private Set<User> users = new HashSet<>();
     
@@ -59,6 +62,7 @@ public class Address {
                 ", city='" + city + '\'' +
                 ", state='" + state + '\'' +
                 ", pincode='" + pincode + '\'' +
+                ", country='" + country + '\'' +
                 '}';
     }
 }
