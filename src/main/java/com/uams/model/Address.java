@@ -11,6 +11,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.util.HashSet;
 import java.util.Set;
+import com.uams.validation.ValidCountry;
 
 @Entity
 @Table(name = "addresses")
@@ -46,6 +47,7 @@ public class Address {
     @Column(name = "pincode", nullable = false)
     private String pincode;
 
+    @ValidCountry
     @Column(name = "country", length = 100)
     private String country;
 
