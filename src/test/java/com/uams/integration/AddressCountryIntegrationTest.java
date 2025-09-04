@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
+@org.springframework.test.annotation.DirtiesContext
 public class AddressCountryIntegrationTest {
 
     @Autowired

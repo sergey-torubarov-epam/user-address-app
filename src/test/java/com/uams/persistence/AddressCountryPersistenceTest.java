@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @DataJpaTest
 @ActiveProfiles("test")
+@org.springframework.test.annotation.DirtiesContext
 public class AddressCountryPersistenceTest {
 
     @Autowired

@@ -4,7 +4,7 @@ import com.uams.model.Address;
 import com.uams.service.AddressService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureTestDatabase;
+// UI tests don't need database configuration
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
@@ -23,10 +23,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * UI/UX tests for Country field functionality
  * Implements requirement from EPMCDMETST-14154
  */
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@org.springframework.test.annotation.DirtiesContext
 public class AddressCountryUITest {
 
     @Autowired
@@ -70,7 +70,7 @@ public class AddressCountryUITest {
 
         // Test edit address form
         mockMvc.perform(get("/addresses/1/edit"))
-                .andExpected(status().isOk())
+                .andExpect(status().isOk())
                 .andExpect(view().name("address/form"))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Germany")));
     }

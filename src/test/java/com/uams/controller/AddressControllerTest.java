@@ -81,7 +81,7 @@ public class AddressControllerTest {
     void showCreateForm_ShouldAddNewAddressToModelAndReturnFormView() throws Exception {
         // Act & Assert
         mockMvc.perform(get("/addresses/new"))
-                .andExpected(status().isOk())
+                .andExpect(status().isOk())
                 .andExpect(model().attributeExists("address"))
                 .andExpect(view().name("address/form"));
     }
@@ -236,7 +236,7 @@ public class AddressControllerTest {
                         .param("pincode", "90210"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("address/form"))
-                .andExpected(model().hasErrors());
+                .andExpect(model().hasErrors());
 
         verify(addressService, never()).saveAddress(any(Address.class));
     }

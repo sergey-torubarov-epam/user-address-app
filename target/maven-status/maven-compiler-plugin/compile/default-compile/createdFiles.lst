@@ -7,12 +7,14 @@ com\uams\controller\AddressController.class
 com\uams\model\Product.class
 com\uams\repository\ProductRepository.class
 com\uams\service\OrderServiceImpl.class
+com\uams\validation\ValidCountry.class
 com\uams\controller\HomeController.class
 com\uams\UserAddressManagementSystemApplication.class
 com\uams\service\UserServiceImpl.class
 com\uams\service\UserService.class
 com\uams\config\OpenApiConfig.class
 com\uams\repository\OrderRepository.class
+com\uams\validation\CountryValidator.class
 com\uams\model\Address.class
 com\uams\repository\UserRepository.class
 com\uams\model\User.class

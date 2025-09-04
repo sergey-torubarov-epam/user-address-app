@@ -1,4 +1,7 @@
 com\uams\service\AddressServiceImplTest.class
 com\uams\service\UserServiceImplTest.class
+com\uams\integration\AddressCountryIntegrationTest.class
 com\uams\controller\AddressControllerTest.class
 com\uams\controller\UserControllerTest.class
+com\uams\ui\AddressCountryUITest.class
+com\uams\persistence\AddressCountryPersistenceTest.class
