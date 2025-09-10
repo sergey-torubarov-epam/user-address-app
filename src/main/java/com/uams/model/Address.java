@@ -9,6 +9,8 @@ import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,6 +44,11 @@ public class Address {
     @Column(name = "state", nullable = false)
     private String state;
 
+    @Pattern(regexp = "^[a-zA-Z\\s\\-]*$", message = "Country can only contain letters, spaces, and hyphens")
+    @Size(max = 100, message = "Country cannot exceed 100 characters")
+    @Column(name = "country", length = 100)
+    private String country;
+
     @NotBlank(message = "Pincode is required")
     @Column(name = "pincode", nullable = false)
     private String pincode;
@@ -58,6 +65,7 @@ public class Address {
                 ", street='" + street + '\'' +
                 ", city='" + city + '\'' +
                 ", state='" + state + '\'' +
+                ", country='" + country + '\'' +
                 ", pincode='" + pincode + '\'' +
                 '}';
     }
