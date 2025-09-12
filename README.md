@@ -2,7 +2,7 @@
 
 ## Overview
 
-The User Address Management System is a comprehensive web application designed to manage user profiles, their associated addresses, products, and orders. It provides an intuitive interface for creating, updating, retrieving, and deleting user, address, product, and order information with a focus on data integrity and usability.
+The User Address Management System is a comprehensive web application designed to manage user profiles and their associated addresses. It provides an intuitive interface for creating, updating, retrieving, and deleting user and address information with a focus on data integrity and usability.
 
 ## Features
 
@@ -17,20 +17,6 @@ The User Address Management System is a comprehensive web application designed t
   - Add new addresses
   - Edit existing addresses
   - Delete addresses
-  
-- **Product Management**
-  - View list of all products
-  - Add new products
-  - Edit existing products
-  - Delete products
-  - Track product inventory
-  
-- **Order Management**
-  - View list of all orders
-  - Create new orders
-  - Update order status
-  - View order details
-  - Track order history
   
 - **User-Address Relationship Management**
   - Assign addresses to users
@@ -67,26 +53,7 @@ The application uses the following database tables:
    - state (VARCHAR(255))
    - pincode (VARCHAR(255))
 
-3. **products**
-   - product_id (BIGINT, Primary Key)
-   - name (VARCHAR(255))
-   - description (VARCHAR(1000))
-   - price (DECIMAL(10,2))
-   - stock_quantity (INT)
-   - category (VARCHAR(255))
-   - image_url (VARCHAR(255))
-
-4. **orders**
-   - order_id (BIGINT, Primary Key)
-   - user_id (BIGINT, Foreign Key)
-   - address_id (BIGINT, Foreign Key)
-   - email (VARCHAR(255))
-   - order_number (VARCHAR(255))
-   - order_date (DATETIME)
-   - status (VARCHAR(255))
-   - total_amount (DOUBLE)
-
-5. **user_address** (Junction Table)
+3. **user_address** (Junction Table)
    - user_id (BIGINT, Foreign Key)
    - address_id (BIGINT, Foreign Key)
 
@@ -102,26 +69,16 @@ user-address-management-system/
 │   │   │           ├── controller/
 │   │   │           │   ├── AddressController.java
 │   │   │           │   ├── HomeController.java
-│   │   │           │   ├── OrderController.java
-│   │   │           │   ├── ProductController.java
 │   │   │           │   └── UserController.java
 │   │   │           ├── model/
 │   │   │           │   ├── Address.java
-│   │   │           │   ├── Order.java
-│   │   │           │   ├── Product.java
 │   │   │           │   └── User.java
 │   │   │           ├── repository/
 │   │   │           │   ├── AddressRepository.java
-│   │   │           │   ├── OrderRepository.java
-│   │   │           │   ├── ProductRepository.java
 │   │   │           │   └── UserRepository.java
 │   │   │           ├── service/
 │   │   │           │   ├── AddressService.java
 │   │   │           │   ├── AddressServiceImpl.java
-│   │   │           │   ├── OrderService.java
-│   │   │           │   ├── OrderServiceImpl.java
-│   │   │           │   ├── ProductService.java
-│   │   │           │   ├── ProductServiceImpl.java
 │   │   │           │   ├── UserService.java
 │   │   │           │   └── UserServiceImpl.java
 │   │   │           └── UserAddressManagementSystemApplication.java
@@ -132,12 +89,6 @@ user-address-management-system/
 │   │       │   │   └── list.html
 │   │       │   ├── layout/
 │   │       │   │   └── main.html
-│   │       │   ├── order/
-│   │       │   │   ├── form.html
-│   │       │   │   └── list.html
-│   │       │   ├── product/
-│   │       │   │   ├── form.html
-│   │       │   │   └── list.html
 │   │       │   └── user/
 │   │       │       ├── addresses.html
 │   │       │       ├── form.html
@@ -149,13 +100,9 @@ user-address-management-system/
 │               └── uams/
 │                   ├── controller/
 │                   │   ├── AddressControllerTest.java
-│                   │   ├── OrderControllerTest.java
-│                   │   ├── ProductControllerTest.java
 │                   │   └── UserControllerTest.java
 │                   └── service/
 │                       ├── AddressServiceImplTest.java
-│                       ├── OrderServiceImplTest.java
-│                       ├── ProductServiceImplTest.java
 │                       └── UserServiceImplTest.java
 └── pom.xml
 ```
@@ -226,26 +173,6 @@ spring.datasource.password=your_password
 - `GET /addresses/{id}/edit` - Show form to edit an address
 - `POST /addresses/{id}` - Update an address
 - `GET /addresses/{id}/delete` - Delete an address
-
-### Product Endpoints
-
-- `GET /products` - List all products
-- `GET /products/new` - Show form to create a new product
-- `POST /products` - Create a new product
-- `GET /products/{id}/edit` - Show form to edit a product
-- `POST /products/{id}` - Update a product
-- `GET /products/{id}/delete` - Delete a product
-
-### Order Endpoints
-
-- `GET /orders` - List all orders
-- `GET /orders/new` - Show form to create a new order
-- `POST /orders` - Create a new order
-- `GET /orders/{id}/edit` - Show form to edit an order
-- `POST /orders/{id}` - Update an order
-- `GET /orders/{id}/delete` - Delete an order
-- `GET /orders/{id}/status` - View order status
-- `POST /orders/{id}/status` - Update order status
 
 ## Testing
 

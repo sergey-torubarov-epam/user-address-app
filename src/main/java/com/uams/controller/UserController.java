@@ -1,182 +1,204 @@
-const express = require('express');
-const router = express.Router();
-const userService = require('../services/userService');
-const addressService = require('../services/addressService');
+package com.uams.controller;
 
-// Route: GET /users
-// Purpose: List all users
-router.get('/', async (req, res, next) => {
-  try {
-    const users = await userService.getAllUsers();
-    res.render('user/list', { users });
-  } catch (error) {
-    next(error);
-  }
-});
+import com.uams.model.Address;
+import com.uams.model.User;
+import com.uams.service.AddressService;
+import com.uams.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-// Route: GET /users/new
-// Purpose: Show form to create a new user
-router.get('/new', (req, res) => {
-  res.render('user/form', { user: {} });
-});
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
-// Route: POST /users
-// Purpose: Create new user
-router.post('/', async (req, res, next) => {
-  const userData = req.body;
-  try {
-    const existingUser = await userService.getUserByEmail(userData.email);
+@Controller
+@RequestMapping("/users")
+@Tag(name = "User Management", description = "APIs for managing users and their addresses")
+public class UserController {
+
+    private final UserService userService;
+    private final AddressService addressService;
+
+    @Autowired
+    public UserController(UserService userService, AddressService addressService) {
+        this.userService = userService;
+        this.addressService = addressService;
+    }
+
+    @Operation(
+        summary = "List all users",
+        description = "Returns a page displaying all users in the system"
+    )
+    @GetMapping
+    public String listUsers(Model model) {
+        List<User> users = userService.getAllUsers();
+        model.addAttribute("users", users);
+        return "user/list";
+    }
+
+    @GetMapping("/new")
+    public String showCreateForm(Model model) {
+        model.addAttribute("user", new User());
+        return "user/form";
+    }
+
+    @Operation(
+        summary = "Create new user",
+        description = "Creates a new user with the provided details"
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "User created successfully"
+    )
+    @PostMapping
+    public String createUser(@Valid @ModelAttribute("user") User user, 
+                             BindingResult result, 
+                             RedirectAttributes redirectAttributes) {
+        if (userService.existsByEmail(user.getEmail())) {
+            result.rejectValue("email", "error.user", "Email already exists");
+        }
+        
+        if (result.hasErrors()) {
+            return "user/form";
+        }
+        
+        userService.saveUser(user);
+        redirectAttributes.addFlashAttribute("successMessage", "User created successfully!");
+        return "redirect:/users";
+    }
+
+    @GetMapping("/{id}/edit")
+    public String showEditForm(@PathVariable Long id, Model model) {
+        Optional<User> userOpt = userService.getUserById(id);
+        if (userOpt.isPresent()) {
+            model.addAttribute("user", userOpt.get());
+            return "user/form";
+        }
+        return "redirect:/users";
+    }
+
+    @Operation(
+        summary = "Update existing user",
+        description = "Updates an existing user's information"
+    )
+    @PostMapping("/{id}")
+    public String updateUser(
+        @Parameter(description = "ID of the user to update") @PathVariable Long id,
+        @Valid @ModelAttribute("user") User user,
+        BindingResult result,
+        RedirectAttributes redirectAttributes) {
+        Optional<User> existingUserOpt = userService.getUserById(id);
+        if (!existingUserOpt.isPresent()) {
+            return "redirect:/users";
+        }
+        
+        User existingUser = existingUserOpt.get();
+        
+        // Check if email is changed and already exists
+        if (!existingUser.getEmail().equals(user.getEmail()) && userService.existsByEmail(user.getEmail())) {
+            result.rejectValue("email", "error.user", "Email already exists");
+        }
+        
+        if (result.hasErrors()) {
+            return "user/form";
+        }
+        
+        // Update user fields
+        existingUser.setEmail(user.getEmail());
+        existingUser.setFirstName(user.getFirstName());
+        existingUser.setLastName(user.getLastName());
+        existingUser.setMobileNumber(user.getMobileNumber());
+        
+        // Only update password if provided
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            existingUser.setPassword(user.getPassword());
+        }
+        
+        userService.saveUser(existingUser);
+        redirectAttributes.addFlashAttribute("successMessage", "User updated successfully!");
+        return "redirect:/users";
+    }
+
+    @Operation(
+        summary = "Delete user",
+        description = "Deletes a user from the system"
+    )
+    @GetMapping("/{id}/delete")
+    public String deleteUser(
+        @Parameter(description = "ID of the user to delete") @PathVariable Long id,
+        RedirectAttributes redirectAttributes) {
+        userService.deleteUser(id);
+        redirectAttributes.addFlashAttribute("successMessage", "User deleted successfully!");
+        return "redirect:/users";
+    }
     
-    // Check if user with the given email already exists
-    if (existingUser) {
-      return res.render('user/form', {
-        user: userData,
-        errors: { email: 'Email already exists' },
-      });
+    @Operation(
+        summary = "View user addresses",
+        description = "Displays all addresses associated with a user"
+    )
+    @GetMapping("/{id}/addresses")
+    public String viewUserAddresses(
+        @Parameter(description = "ID of the user") @PathVariable Long id,
+        Model model) {
+        Optional<User> userOpt = userService.getUserById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            model.addAttribute("user", user);
+            model.addAttribute("addresses", user.getAddresses());
+            model.addAttribute("allAddresses", addressService.getAllAddresses());
+            model.addAttribute("newAddress", new Address());
+            return "user/addresses";
+        }
+        return "redirect:/users";
     }
-
-    // Create a new user if email doesn't exist
-    await userService.createUser(userData);
-    req.flash('successMessage', 'User created successfully!');
-    res.redirect('/users');
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Route: GET /users/:id/edit
-// Purpose: Show form to edit user
-router.get('/:id/edit', async (req, res, next) => {
-  const userId = req.params.id;
-  try {
-    const user = await userService.getUserById(userId);
     
-    // Render edit form if user is found, otherwise redirect to user list
-    if (user) {
-      res.render('user/form', { user });
-    } else {
-      res.redirect('/users');
+    @PostMapping("/{userId}/addresses/add")
+    public String addAddressToUser(@PathVariable Long userId, 
+                                  @RequestParam Long addressId,
+                                  RedirectAttributes redirectAttributes) {
+        Optional<User> userOpt = userService.getUserById(userId);
+        Optional<Address> addressOpt = addressService.getAddressById(addressId);
+        
+        if (userOpt.isPresent() && addressOpt.isPresent()) {
+            User user = userOpt.get();
+            Address address = addressOpt.get();
+            
+            user.addAddress(address);
+            userService.saveUser(user);
+            
+            redirectAttributes.addFlashAttribute("successMessage", "Address added to user successfully!");
+        }
+        
+        return "redirect:/users/" + userId + "/addresses";
     }
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Route: POST /users/:id
-// Purpose: Update user
-router.post('/:id', async (req, res, next) => {
-  const userId = req.params.id;
-  const userData = req.body;
-
-  try {
-    const existingUser = await userService.getUserById(userId);
     
-    // Redirect if user does not exist
-    if (!existingUser) {
-      return res.redirect('/users');
+    @GetMapping("/{userId}/addresses/{addressId}/remove")
+    public String removeAddressFromUser(@PathVariable Long userId, 
+                                       @PathVariable Long addressId,
+                                       RedirectAttributes redirectAttributes) {
+        Optional<User> userOpt = userService.getUserById(userId);
+        Optional<Address> addressOpt = addressService.getAddressById(addressId);
+        
+        if (userOpt.isPresent() && addressOpt.isPresent()) {
+            User user = userOpt.get();
+            Address address = addressOpt.get();
+            
+            user.removeAddress(address);
+            userService.saveUser(user);
+            
+            redirectAttributes.addFlashAttribute("successMessage", "Address removed from user successfully!");
+        }
+        
+        return "redirect:/users/" + userId + "/addresses";
     }
-
-    // Check if new email already exists and is not the current user's email
-    if (
-      existingUser.email !== userData.email &&
-      (await userService.getUserByEmail(userData.email))
-    ) {
-      return res.render('user/form', {
-        user: userData,
-        errors: { email: 'Email already exists' },
-      });
-    }
-
-    // Update user data
-    await userService.updateUser(userId, userData);
-    req.flash('successMessage', 'User updated successfully!');
-    res.redirect('/users');
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Route: GET /users/:id/delete
-// Purpose: Delete user
-router.get('/:id/delete', async (req, res, next) => {
-  const userId = req.params.id;
-
-  try {
-    await userService.deleteUser(userId);
-    req.flash('successMessage', 'User deleted successfully!');
-    res.redirect('/users');
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Route: GET /users/:id/addresses
-// Purpose: View user addresses
-router.get('/:id/addresses', async (req, res, next) => {
-  const userId = req.params.id;
-
-  try {
-    const user = await userService.getUserById(userId);
-    
-    // Retrieve and render user addresses if user is found
-    if (user) {
-      const allAddresses = await addressService.getAllAddresses();
-      res.render('user/addresses', {
-        user,
-        addresses: user.addresses,
-        allAddresses,
-        newAddress: {},
-      });
-    } else {
-      res.redirect('/users');
-    }
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Route: POST /users/:userId/addresses/add
-// Purpose: Add address to user
-router.post('/:userId/addresses/add', async (req, res, next) => {
-  const userId = req.params.userId;
-  const { addressId } = req.body;
-
-  try {
-    const user = await userService.getUserById(userId);
-    const address = await addressService.getAddressById(addressId);
-
-    // Add address to user if both user and address are found
-    if (user && address) {
-      await userService.addAddressToUser(userId, addressId);
-      req.flash('successMessage', 'Address added to user successfully!');
-    }
-
-    res.redirect(`/users/${userId}/addresses`);
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Route: GET /users/:userId/addresses/:addressId/remove
-// Purpose: Remove address from user
-router.get('/:userId/addresses/:addressId/remove', async (req, res, next) => {
-  const userId = req.params.userId;
-  const addressId = req.params.addressId;
-
-  try {
-    const user = await userService.getUserById(userId);
-    const address = await addressService.getAddressById(addressId);
-
-    // Remove address from user if both user and address are found
-    if (user && address) {
-      await userService.removeAddressFromUser(userId, addressId);
-      req.flash('successMessage', 'Address removed from user successfully!');
-    }
-
-    res.redirect(`/users/${userId}/addresses`);
-  } catch (error) {
-    next(error);
-  }
-});
-
-module.exports = router;
+}

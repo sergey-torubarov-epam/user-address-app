@@ -1,1 +1,4 @@
+com\uams\service\AddressServiceImplTest.class
+com\uams\service\UserServiceImplTest.class
+com\uams\controller\AddressControllerTest.class
 com\uams\controller\UserControllerTest.class

@@ -1,121 +1,71 @@
-const { DataTypes, Model } = require('sequelize');
-const sequelize = require('../config/database');
+package com.uams.model;
 
-/**
- * User model representing user data in the system.
- * This class extends Sequelize's Model class to define the schema and behavior of the User entity.
- */
-class User extends Model {}
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 
-User.init(
-  {
-    /**
-     * Unique identifier for each user.
-     * Automatically increments with each new user creation.
-     * Serves as the primary key in the database.
-     */
-    userId: {
-      type: DataTypes.BIGINT,
-      autoIncrement: true,
-      primaryKey: true,
-      field: 'user_id',
-    },
-    /**
-     * Email address of the user.
-     * Must be unique across all users and conform to a valid email format.
-     * Used for user identification and communication.
-     */
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-      validate: {
-        notNull: { msg: 'Email is required' },
-        isEmail: { msg: 'Please provide a valid email address' },
-      },
-    },
-    /**
-     * First name of the user.
-     * Required field that cannot be null.
-     * Represents the user's given name.
-     */
-    firstName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      field: 'first_name',
-      validate: {
-        notNull: { msg: 'First name is required' },
-      },
-    },
-    /**
-     * Last name of the user.
-     * Required field that cannot be null.
-     * Represents the user's family name or surname.
-     */
-    lastName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      field: 'last_name',
-      validate: {
-        notNull: { msg: 'Last name is required' },
-      },
-    },
-    /**
-     * Mobile number of the user.
-     * Optional field that can be null.
-     * Stores the user's contact phone number.
-     */
-    mobileNumber: {
-      type: DataTypes.STRING,
-      field: 'mobile_number',
-    },
-    /**
-     * Password for user authentication.
-     * Required field that cannot be null.
-     * Must be at least 6 characters long for security purposes.
-     * Note: In production, passwords should be hashed before storage.
-     */
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notNull: { msg: 'Password is required' },
-        len: {
-          args: [6],
-          msg: 'Password must be at least 6 characters long',
-        },
-      },
-    },
-  },
-  {
-    sequelize,
-    modelName: 'User',
-    tableName: 'users',
-    timestamps: false, // Disables automatic timestamp fields (createdAt, updatedAt)
-  }
-);
+import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+import java.util.HashSet;
+import java.util.Set;
 
-const Address = require('./address'); // Importing the Address model
+@Entity
+@Table(name = "users")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(exclude = "addresses")
+@EqualsAndHashCode(exclude = "addresses")
+public class User {
 
-/**
- * Establishes a many-to-many relationship between User and Address.
- * This relationship is implemented using a junction table named 'user_address'.
- * It allows each user to have multiple addresses and each address to be associated with multiple users.
- */
-User.belongsToMany(Address, {
-  through: 'user_address', // Name of the junction table
-  foreignKey: 'user_id', // Foreign key in the junction table referencing User
-  otherKey: 'address_id', // Foreign key in the junction table referencing Address
-});
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private Long userId;
 
-/**
- * Reciprocal relationship definition for the many-to-many association.
- * This allows querying the relationship from the Address side as well.
- */
-Address.belongsToMany(User, {
-  through: 'user_address',
-  foreignKey: 'address_id',
-  otherKey: 'user_id',
-});
+    @NotBlank(message = "Email is required")
+    @Email(message = "Please provide a valid email address")
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
 
-module.exports = User;
+    @NotBlank(message = "First name is required")
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
+
+    @NotBlank(message = "Last name is required")
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
+
+    @Column(name = "mobile_number")
+    private String mobileNumber;
+
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters long")
+    @Column(name = "password", nullable = false)
+    private String password;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "user_address",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "address_id")
+    )
+    private Set<Address> addresses = new HashSet<>();
+
+    // Helper methods to manage bidirectional relationship
+    public void addAddress(Address address) {
+        this.addresses.add(address);
+        address.getUsers().add(this);
+    }
+
+    public void removeAddress(Address address) {
+        this.addresses.remove(address);
+        address.getUsers().remove(this);
+    }
+}

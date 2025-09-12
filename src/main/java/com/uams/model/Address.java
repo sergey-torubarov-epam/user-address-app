@@ -1,105 +1,64 @@
-const { Model, DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+package com.uams.model;
 
-/**
- * Represents an address of a user or a place.
- * This model is used to store and manage address information in the database.
- */
-class Address extends Model {}
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 
-/**
- * Initializes the Address model with the following fields:
- * - addressId: Primary key, auto-incremented Unique identifier for the address.
- * - buildingName: Nullable string for the building name or number.
- * - street: String for the street name which is required and must not be empty.
- * - city: String for the city name which is required and must not be empty.
- * - state: String for the state name which is required and must not be empty.
- * - pincode: String for the postal code which is required and must not be empty.
- * 
- * No Lombok annotations are available or used in JavaScript/Node.js context.
- * 
- * This model definition uses Sequelize ORM to map the Address entity to the 'addresses' table in the database.
- */
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import java.util.HashSet;
+import java.util.Set;
 
-Address.init(
-  {
-    /**
-     * Primary key, auto-incremented Unique identifier for the address.
-     * This field serves as the main identifier for each address record.
-     */
-    addressId: {
-      type: DataTypes.BIGINT,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    /**
-     * Nullable string for the building name or number.
-     * This field is optional and can be left empty if not applicable.
-     */
-    buildingName: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    /**
-     * String for the street name which is required and must not be empty.
-     * This field is mandatory and represents the street part of the address.
-     */
-    street: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: {
-          msg: 'Street is required',
-        },
-      },
-    },
-    /**
-     * String for the city name which is required and must not be empty.
-     * This field is mandatory and represents the city part of the address.
-     */
-    city: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: {
-          msg: 'City is required',
-        },
-      },
-    },
-    /**
-     * String for the state name which is required and must not be empty.
-     * This field is mandatory and represents the state or province part of the address.
-     */
-    state: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: {
-          msg: 'State is required',
-        },
-      },
-    },
-    /**
-     * String for the postal code which is required and must not be empty.
-     * This field is mandatory and represents the postal or ZIP code of the address.
-     */
-    pincode: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: {
-          msg: 'Pincode is required',
-        },
-      },
-    },
-  },
-  {
-    sequelize,
-    modelName: 'Address',
-    tableName: 'addresses',
-    timestamps: false, // Indicates that this model doesn't use createdAt and updatedAt fields
-  }
-);
+@Entity
+@Table(name = "addresses")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(exclude = "users")
+@EqualsAndHashCode(exclude = "users")
+public class Address {
 
-// Export the Address model to be used in other parts of the application
-module.exports = Address;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "address_id")
+    private Long addressId;
+
+    @Column(name = "building_name")
+    private String buildingName;
+
+    @NotBlank(message = "Street is required")
+    @Column(name = "street", nullable = false)
+    private String street;
+
+    @NotBlank(message = "City is required")
+    @Column(name = "city", nullable = false)
+    private String city;
+
+    @NotBlank(message = "State is required")
+    @Column(name = "state", nullable = false)
+    private String state;
+
+    @NotBlank(message = "Pincode is required")
+    @Column(name = "pincode", nullable = false)
+    private String pincode;
+
+    @ManyToMany(mappedBy = "addresses", fetch = FetchType.LAZY)
+    private Set<User> users = new HashSet<>();
+    
+    // Override toString to prevent infinite recursion
+    @Override
+    public String toString() {
+        return "Address{" +
+                "addressId=" + addressId +
+                ", buildingName='" + buildingName + '\'' +
+                ", street='" + street + '\'' +
+                ", city='" + city + '\'' +
+                ", state='" + state + '\'' +
+                ", pincode='" + pincode + '\'' +
+                '}';
+    }
+}
